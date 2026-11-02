@@ -771,8 +771,8 @@ function resize() {
   L.fs = clamp(Math.min(1.8, maxFs), 1.05, 1.8);
   const fk = k * L.fs;
   L.fk = fk;
-  /* 木桩比人物再小一圈 */
-  L.dk = fk * 0.8;
+  /* 木桩顶比人物头顶高约 0.5cm（人物头顶在 -238.6k） */
+  L.dk = fk * (239.5 / 262);
 
   /* 间距自适应：按视口宽度比例定位，窄屏自动收窄 */
   /* 人物侧边距（肩+臂+棍）和木桩侧边距（木桩直径约 220*fk）独立计算 */
@@ -1133,10 +1133,11 @@ $('#sndBtn').addEventListener('click', e => {
    ============================================================ */
 function updateSticks(dt) {
   const k = L.fk;
-  /* 手臂总长 83k；双节棍恢复原长（每节 64k），手握第一节中点 */
+  /* 手臂总长 83k；双节棍两节等长 46k，手握第一节中点，下垂时棍尖仍在脚踝以上 */
   const armLen = 83 * k;
   const link = 9 * k;
-  const L1 = 32 * k + link, L2 = 64 * k + link;
+  const rod = 46 * k;
+  const L1 = rod / 2 + link, L2 = rod + link;
   const reach = armLen * 0.97;
 
   // hand target = mouse clamped around shoulder
@@ -1855,8 +1856,8 @@ function drawNunchaku() {
   const c0x = A.x - Math.cos(angA) * gap, c0y = A.y - Math.sin(angA) * gap;
   const c1x = A.x + Math.cos(angB) * gap, c1y = A.y + Math.sin(angB) * gap;
 
-  /* stick A : 手握在棍的中部，前后各露出半节 */
-  const half = 32 * k;
+  /* stick A : 手握在棍的中部，前后各露出半节（两节等长） */
+  const half = 23 * k;
   stick(h.x - Math.cos(angA) * half, h.y - Math.sin(angA) * half, c0x, c0y, 6.6 * k);
 
   /* chain */
