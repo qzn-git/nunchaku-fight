@@ -124,15 +124,15 @@ body{
 }
 .stage__timer{font-family:var(--font-num);font-size:11px;letter-spacing:.28em;color:var(--paper-dim)}
 
-/* buffs */
-.buffcol{position:absolute;left:clamp(16px,2.2vw,34px);top:34%;display:flex;flex-direction:column;gap:9px;padding-left:12px}
-.buffcol::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:1px;background:linear-gradient(180deg,transparent,rgba(255,207,58,.45),transparent)}
+/* buffs（并入右下架势面板，与「架 势」标签同排） */
+.stancepanel__head{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:8px}
+.buffrow{display:flex;gap:6px;justify-content:flex-end}
 .buff{
-  position:relative;width:38px;height:38px;display:grid;place-items:center;overflow:hidden;
-  font-family:var(--font-display);font-size:16px;color:rgba(242,236,224,.86);
+  position:relative;width:30px;height:30px;display:grid;place-items:center;overflow:hidden;
+  font-family:var(--font-display);font-size:14px;color:rgba(242,236,224,.86);
   background:linear-gradient(160deg,rgba(30,36,42,.92),rgba(6,9,12,.88));
   border:1px solid rgba(242,236,224,.15);
-  clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);
 }
 .buff::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% -10%,rgba(255,207,58,.16),transparent 70%)}
 .buff[data-off]{opacity:.45}
@@ -165,10 +165,17 @@ body{
 .combo__label{font-size:11px;letter-spacing:.42em;color:var(--gold);margin-top:2px}
 .combo__mult{font-family:var(--font-num);font-size:12px;letter-spacing:.16em;color:var(--paper-dim);margin-top:4px}
 
+/* 底部统一横栏：三块内容共享同一条垂直中轴 */
+.botbar{
+  position:absolute;left:0;right:0;bottom:clamp(42px,3.4vw,48px);
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:0 clamp(16px,2.2vw,34px);pointer-events:none;
+}
+.botbar > *{pointer-events:auto}
+
 /* dock */
 .dock{
-  position:absolute;left:50%;bottom:clamp(44px,4.4vw,56px);transform:translateX(-50%);
-  display:flex;gap:clamp(8px,1vw,16px);align-items:flex-end;
+  display:flex;gap:clamp(8px,1vw,16px);align-items:flex-end;justify-self:center;
 }
 .skill{
   position:relative;width:clamp(46px,4.8vw,60px);height:clamp(46px,4.8vw,60px);
@@ -215,12 +222,13 @@ body{
 
 /* hints */
 .hintbar{
-  position:absolute;left:clamp(16px,2.2vw,34px);bottom:clamp(24px,3vw,38px);
+  justify-self:start;min-width:0;max-width:100%;
   display:flex;flex-direction:column;align-items:flex-start;gap:9px;
   font-size:clamp(13px,.86vw,16px);font-weight:500;letter-spacing:.06em;
-  color:rgba(242,236,224,.9);text-shadow:0 1px 4px rgba(0,0,0,.95);max-width:58vw;
+  color:rgba(242,236,224,.9);text-shadow:0 1px 4px rgba(0,0,0,.95);
 }
-.hintrow{display:flex;flex-wrap:nowrap;gap:10px 24px;align-items:center;white-space:nowrap}
+.hintrow{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;white-space:nowrap}
+.hintrow > span{white-space:nowrap}
 kbd{
   display:inline-flex;align-items:center;justify-content:center;
   font-family:var(--font-num);font-size:clamp(12px,.72vw,13px);line-height:1;
@@ -238,8 +246,8 @@ kbd{
 .sndbtn.is-off{opacity:.4}
 
 /* stance */
-.stancepanel{position:absolute;right:clamp(16px,2.2vw,34px);bottom:clamp(44px,4.4vw,56px);text-align:right}
-.stancepanel__label{font-size:clamp(12px,.72vw,13px);letter-spacing:.42em;color:rgba(242,236,224,.72);margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.95)}
+.stancepanel{justify-self:end;text-align:right}
+.stancepanel__label{font-size:clamp(12px,.72vw,13px);letter-spacing:.42em;color:rgba(242,236,224,.72);margin:0;text-shadow:0 1px 4px rgba(0,0,0,.95)}
 .stances{display:flex;gap:7px;justify-content:flex-end}
 .stance{
   width:clamp(38px,2.4vw,48px);height:clamp(38px,2.4vw,48px);
@@ -346,15 +354,26 @@ kbd{
 }
 .rankbadge.rank-S{background:var(--blood);color:#fff}
 
+/* 中宽屏（平板横屏 / 小笔记本）：压缩键位提示，保持两行不被挤散 */
+@media (min-width:861px) and (max-width:1120px){
+  .hintbar{font-size:11.5px;gap:7px}
+  .hintrow{gap:5px 12px}
+  .hintbar kbd{font-size:11px;height:1.45em;min-width:1.6em;margin-right:.3em;padding:0 .3em}
+}
+
 @media (max-width:860px){
-  .buffcol{display:none}
+  .buffrow{display:none}
   .combopanel{top:24%}
-  /* ---- 底部三栏重排：手机上独占底部 ---- */
+  /* ---- 手机上底栏改为纵向堆叠：技能坞贴底居中，架势面板在其上方 ---- */
+  .botbar{
+    display:flex;flex-direction:column-reverse;align-items:stretch;
+    gap:8px;bottom:10px;padding:0 12px;
+    padding-bottom:env(safe-area-inset-bottom,0);
+  }
   .hintbar{display:none}
   .dock{
-    bottom:12px;
+    align-self:center;
     gap:clamp(6px,1.4vw,12px);
-    padding-bottom:env(safe-area-inset-bottom,0);
   }
   .skill{
     width:clamp(42px,10.5vw,62px);
@@ -364,12 +383,10 @@ kbd{
   .skill__name{display:none}
   .skill__key{display:none}
   .skill__chg{display:none !important}
-  /* ---- 架势面板上移到 dock 上方，缩小 ---- */
-  .stancepanel{
-    right:12px;
-    bottom:calc(clamp(42px,10.5vw,62px) + clamp(6px,1.4vw,12px) + 18px);
-  }
-  .stancepanel__label{font-size:10px;letter-spacing:.3em;margin-bottom:5px}
+  /* ---- 架势面板：右对齐，跟在技能坞上方 ---- */
+  .stancepanel{align-self:flex-end}
+  .stancepanel__head{margin-bottom:5px}
+  .stancepanel__label{font-size:10px;letter-spacing:.3em}
   .stances{gap:5px}
   .stance{
     width:clamp(32px,8vw,40px);
@@ -441,12 +458,6 @@ kbd{
       </div>
     </header>
 
-    <div class="buffcol">
-      <div class="buff" title="疾风 · 攻速 +15%">疾</div>
-      <div class="buff" title="铁壁 · 减伤 20%">壁</div>
-      <div class="buff" id="buffQi" title="炁·充盈 · 绝招就绪" data-off>炁</div>
-    </div>
-
     <div class="combopanel" id="comboPanel">
       <div class="combo__rank" id="comboRank">C</div>
       <div class="combo__num" id="comboNum">0</div>
@@ -454,32 +465,42 @@ kbd{
       <div class="combo__mult" id="comboMult">伤害 ×1.0</div>
     </div>
 
-    <div class="hintbar">
-      <div class="hintrow">
-        <span><kbd>A</kbd><kbd>D</kbd>走位</span>
-        <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd>绝招</span>
-        <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
+    <!-- 底部统一横栏：键位提示 / 绝招技能 / 架势与状态，同一水平中轴 -->
+    <div class="botbar">
+      <div class="hintbar">
+        <div class="hintrow">
+          <span><kbd>A</kbd><kbd>D</kbd>走位</span>
+          <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd>绝招</span>
+          <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
+        </div>
+        <div class="hintrow">
+          <span><kbd>鼠标</kbd>甩棍</span>
+          <span><kbd>空格</kbd>闪避</span>
+          <span><kbd>Esc</kbd>暂停</span>
+          <button class="sndbtn" id="sndBtn" title="音效开关">
+            <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="hintrow">
-        <span><kbd>鼠标</kbd>甩棍</span>
-        <span><kbd>空格</kbd>闪避</span>
-        <span><kbd>Esc</kbd>暂停</span>
-        <button class="sndbtn" id="sndBtn" title="音效开关">
-          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
-        </button>
-      </div>
-    </div>
 
-    <div class="dock" id="dock"></div>
+      <div class="dock" id="dock"></div>
 
-    <div class="stancepanel">
-      <div class="stancepanel__label">架 势</div>
-      <div class="stances" id="stances">
-        <button class="stance" data-stance="guard">守</button>
-        <button class="stance is-on" data-stance="attack">攻</button>
-        <button class="stance" data-stance="burst">爆</button>
+      <div class="stancepanel">
+        <div class="stancepanel__head">
+          <div class="buffrow">
+            <div class="buff" title="疾风 · 攻速 +15%">疾</div>
+            <div class="buff" title="铁壁 · 减伤 20%">壁</div>
+            <div class="buff" id="buffQi" title="炁·充盈 · 绝招就绪" data-off>炁</div>
+          </div>
+          <div class="stancepanel__label">架 势</div>
+        </div>
+        <div class="stances" id="stances">
+          <button class="stance" data-stance="guard">守</button>
+          <button class="stance is-on" data-stance="attack">攻</button>
+          <button class="stance" data-stance="burst">爆</button>
+        </div>
+        <div class="stancepanel__desc" id="stanceDesc">伤害 ×1.0 ・ 受伤 ×1.0</div>
       </div>
-      <div class="stancepanel__desc" id="stanceDesc">伤害 ×1.0 ・ 受伤 ×1.0</div>
     </div>
   </div>
 
@@ -760,8 +781,8 @@ function resize() {
   if (dockRect && dockRect.height > 0) {
     dockTopY = dockRect.top;
   } else {
-    const dockBottom = mobile ? 12 : clamp(28, W * 3.2 / 100, 42);
-    const dockHeight = mobile ? clamp(42, W * 10.5 / 100, 62) : clamp(58, W * 5.6 / 100, 74);
+    const dockBottom = mobile ? 10 : clamp(42, W * 3.4 / 100, 48);
+    const dockHeight = mobile ? clamp(42, W * 10.5 / 100, 62) : clamp(46, W * 4.8 / 100, 60);
     dockTopY = H - dockBottom - dockHeight;
   }
   /* 脚下留出 36px 空隙，保证整条腿和脚都完整可见 */
