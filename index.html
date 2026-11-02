@@ -429,8 +429,9 @@ kbd{
   }
   .skill__face svg{width:46%;height:46%}
   .skill__name,.skill__key,.skill__chg{display:none !important}
-  .stancepanel{grid-area:stance;justify-self:end;align-self:end;text-align:right}
-  .stancepanel__label{font-size:9px;letter-spacing:.3em;margin-bottom:4px}
+  .stancepanel{grid-area:stance;justify-self:end;align-self:end;text-align:right;position:relative}
+  /* 标签抽离文档流，让架势/基础招式两行等高，绝招行正好竖向居中 */
+  .stancepanel__label{position:absolute;right:0;bottom:calc(100% + 4px);margin:0;font-size:9px;letter-spacing:.3em}
   .stances{gap:4px}
   .stance{
     width:clamp(28px,7.4vw,34px);height:clamp(28px,7.4vw,34px);
@@ -442,7 +443,7 @@ kbd{
     display:flex;gap:clamp(4px,1.2vw,8px);
   }
   .basic{
-    width:clamp(30px,8.6vw,42px);height:clamp(26px,7.4vw,34px);
+    width:clamp(30px,8.6vw,42px);height:clamp(28px,7.4vw,34px);
     font-size:clamp(15px,4vw,19px);
   }
 }
