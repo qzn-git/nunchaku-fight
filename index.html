@@ -1130,8 +1130,8 @@ $('#sndBtn').addEventListener('click', e => {
    ============================================================ */
 function updateSticks(dt) {
   const k = L.fk;
-  /* 统一：手臂 106k（上臂 48 + 前臂 58），手最低点在膝盖之上 */
-  const armLen = 106 * k;
+  /* 统一：手臂 83k（上臂 38 + 前臂 45），手最低点约在大腿中段 */
+  const armLen = 83 * k;
   const L1 = 64 * k, L2 = 64 * k;
   const reach = armLen * 0.97;
 
@@ -1306,14 +1306,12 @@ function update(dt, rawDt) {
     if (d < L.hitR) S.nearFrames++;
     /* 抡出去了但够不着 → 自动上步，不用先学走位也能打上 */
     const gy2 = L.groundY - 150 * L.fk;
-    const reachTip = 106 * L.fk * 2.05;
+    const reachTip = 83 * L.fk * 2.5;
     const gapNow = Math.hypot(L.dx - L.shoulder.x, gy2 - L.shoulder.y);
-    if (gapNow > reachTip && (MV.t > 0 || S.mouse.x > L.shoulder.x + 90 * L.fk)) {
-      /* 往木桩方向推到底还够不着 → 自动上步，直到棍尖能够到 */
+    /* 只有键盘招式时才会自动跟进一步；鼠标只负责甩棍，不带动人物走位 */
+    if (gapNow > reachTip && MV.t > 0) {
       S.stepF = Math.min(1, S.stepF + dt * ((gapNow - reachTip) / L.stepMax) * 3.2);
       if (Math.random() < dt * 16) RFX('after', { x: L.px, y: L.groundY, life: 0.3 });
-    } else if (S.stepF > 0 && S.mouse.x < L.shoulder.x + 30 * L.fk) {
-      S.stepF = Math.max(0, S.stepF - dt * 0.7);
     }
     if (S.hitLock <= 0 && speed > 460 && d < L.hitR) {
       const scr = (MV.t > 0 && MV.def);
@@ -1813,7 +1811,7 @@ function drawPlayer() {
   /* front arm (two-bone IK) */
   const sh = { x: 17 * k, y: -174 * k };
   const hand = { x: S.hand.x - bx, y: S.hand.y - gy };
-  const elbow = ik(sh, hand, 48 * k, 58 * k);
+  const elbow = ik(sh, hand, 38 * k, 45 * k);
   limb(sh.x, sh.y, elbow.x, elbow.y, 16 * k, 13 * k, skin);
   limb(elbow.x, elbow.y, hand.x, hand.y, 13 * k, 10 * k, skin);
 
