@@ -771,6 +771,8 @@ function resize() {
   L.fs = clamp(Math.min(1.8, maxFs), 1.05, 1.8);
   const fk = k * L.fs;
   L.fk = fk;
+  /* 木桩比人物再小一圈 */
+  L.dk = fk * 0.8;
 
   /* 间距自适应：按视口宽度比例定位，窄屏自动收窄 */
   /* 人物侧边距（肩+臂+棍）和木桩侧边距（木桩直径约 220*fk）独立计算 */
@@ -803,9 +805,9 @@ function resize() {
     S.mouseInit = true;
   }
   if (!P.a.x) {
-    P.a.x = S.hand.x + 34 * fk; P.a.y = S.hand.y - 8 * fk;
+    P.a.x = S.hand.x + 32 * fk; P.a.y = S.hand.y - 8 * fk;
     P.a.px = P.a.x; P.a.py = P.a.y;
-    P.b.x = P.a.x + 34 * fk; P.b.y = P.a.y + 6 * fk;
+    P.b.x = P.a.x + 60 * fk; P.b.y = P.a.y + 6 * fk;
     P.b.px = P.b.x; P.b.py = P.b.y;
   }
 }
@@ -966,7 +968,7 @@ function hitDummy(amount, opts) {
   D.wobV += (opts.dir || 0.9) * 0.9;
   D.hitFlash = 1;
 
-  const hx = L.dx - 26 * L.fk + rnd(-14, 14), hy = L.groundY - 150 * L.fk + rnd(-40, 40);
+  const hx = L.dx - 26 * L.dk + rnd(-14, 14), hy = L.groundY - 150 * L.dk + rnd(-40, 40);
   spark(hx, hy, opts.big ? 22 : 10, opts.color || '255,214,110', opts.big ? 1.7 : 1);
   dmgText(hx + rnd(-34, 34), hy - 34, opts.txt || String(dmg), opts.color ? '#' + opts.color : '#ffe89a', opts.big ? 52 : clamp(26 + dmg * 0.16, 26, 38));
   S.shake = Math.min(26, S.shake + (opts.big ? 16 : 7));
@@ -975,8 +977,8 @@ function hitDummy(amount, opts) {
   if (D.hp <= 0) {
     D.broken = true;
     D.hpE = 0;
-    spark(L.dx, L.groundY - 150 * L.fk, 60, '200,150,90', 2.2);
-    RFX('ring', { x: L.dx, y: L.groundY - 150 * L.fk, r: 12, r2: 420 * L.fk, life: 0.9, color: '227,59,44' });
+    spark(L.dx, L.groundY - 150 * L.dk, 60, '200,150,90', 2.2);
+    RFX('ring', { x: L.dx, y: L.groundY - 150 * L.dk, r: 12, r2: 420 * L.fk, life: 0.9, color: '227,59,44' });
     S.slow = 0.3;
     setTimeout(() => { if (D.broken) winGame(); }, 1400);
   }
@@ -1027,7 +1029,7 @@ function useSkill(i) {
   s.cdLeft = s.cd;
   S.qi = Math.max(0, S.qi - s.cost);
   const dmg = Math.round(rnd(s.dmg[0], s.dmg[1]) * STANCE[S.stance].dmg * comboMult());
-  const gy = L.groundY - 150 * L.fk;
+  const gy = L.groundY - 150 * L.dk;
   const gx = L.dx;
 
   if (s.id === 'sweep') {
@@ -1131,9 +1133,10 @@ $('#sndBtn').addEventListener('click', e => {
    ============================================================ */
 function updateSticks(dt) {
   const k = L.fk;
-  /* 手臂总长 83k；双节棍两节共 76k，手臂下垂时棍尖停在脚踝以上 */
+  /* 手臂总长 83k；双节棍恢复原长（每节 64k），手握第一节中点 */
   const armLen = 83 * k;
-  const L1 = 38 * k, L2 = 38 * k;
+  const link = 9 * k;
+  const L1 = 32 * k + link, L2 = 64 * k + link;
   const reach = armLen * 0.97;
 
   // hand target = mouse clamped around shoulder
@@ -1292,7 +1295,7 @@ function update(dt, rawDt) {
   // hit detection
   S.hitLock = Math.max(0, S.hitLock - dt);
   if (S.phase === 'fight' && !D.broken) {
-    const gy = L.groundY - 150 * L.fk;
+    const gy = L.groundY - 150 * L.dk;
     const speedA = Math.hypot(P.a.x - P.lastA.x, P.a.y - P.lastA.y) / Math.max(dt, 0.001);
     const speedB = Math.hypot(P.b.x - P.lastTip.x, P.b.y - P.lastTip.y) / Math.max(dt, 0.001);
     const speed = Math.max(speedA, speedB);
@@ -1306,7 +1309,7 @@ function update(dt, rawDt) {
     S.minDist = Math.min(S.minDist, d);
     if (d < L.hitR) S.nearFrames++;
     /* 抡出去了但够不着 → 自动上步，不用先学走位也能打上 */
-    const gy2 = L.groundY - 150 * L.fk;
+    const gy2 = L.groundY - 150 * L.dk;
     const reachTip = 83 * L.fk * 2.5;
     const gapNow = Math.hypot(L.dx - L.shoulder.x, gy2 - L.shoulder.y);
     /* 只有键盘招式时才会自动跟进一步；鼠标只负责甩棍，不带动人物走位 */
@@ -1576,7 +1579,7 @@ function shadowEllipse(x, y, rx, ry, a) {
 
 /* ---------------- dummy ---------------- */
 function drawDummy() {
-  const k = L.fk, gy = L.groundY;
+  const k = L.dk, gy = L.groundY;
   const x = L.dx - D.pull * 16 * k;
   const y = gy;
 
@@ -1852,9 +1855,9 @@ function drawNunchaku() {
   const c0x = A.x - Math.cos(angA) * gap, c0y = A.y - Math.sin(angA) * gap;
   const c1x = A.x + Math.cos(angB) * gap, c1y = A.y + Math.sin(angB) * gap;
 
-  /* stick A : hand -> joint (handle pokes out behind the fist) */
-  const back = 7 * k;
-  stick(h.x - Math.cos(angA) * back, h.y - Math.sin(angA) * back, c0x, c0y, 6.6 * k);
+  /* stick A : 手握在棍的中部，前后各露出半节 */
+  const half = 32 * k;
+  stick(h.x - Math.cos(angA) * half, h.y - Math.sin(angA) * half, c0x, c0y, 6.6 * k);
 
   /* chain */
   const chainAng = (angA + angB) / 2;
@@ -2090,7 +2093,7 @@ function distToSeg(px, py, x0, y0, x1, y1) {
 
 function demoDrive(t) {
   const k = L.fk;
-  const gy = L.groundY - 150 * k;
+  const gy = L.groundY - 150 * L.dk;
   if (/[?&]kbd/.test(location.search)) {
     /* 纯键盘测试：手收在身侧，只靠 J/K/L */
     S.mouse.x = L.shoulder.x + 40 * k;
