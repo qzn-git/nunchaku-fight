@@ -1130,8 +1130,8 @@ $('#sndBtn').addEventListener('click', e => {
    ============================================================ */
 function updateSticks(dt) {
   const k = L.fk;
-  /* 统一：手臂 118k（上臂 54 + 前臂 64），不管桌面手机都不过膝 */
-  const armLen = 118 * k;
+  /* 统一：手臂 106k（上臂 48 + 前臂 58），手最低点在膝盖之上 */
+  const armLen = 106 * k;
   const L1 = 64 * k, L2 = 64 * k;
   const reach = armLen * 0.97;
 
@@ -1163,7 +1163,7 @@ function updateSticks(dt) {
     S.hand.y += hdy / hd * step;
   }
   else {
-    const follow = 1 - Math.exp(-dt * 26);
+    const follow = 1 - Math.exp(-dt * 15);
     S.hand.x = lerp(S.hand.x, tx, follow);
     S.hand.y = lerp(S.hand.y, ty, follow);
   }
@@ -1172,11 +1172,12 @@ function updateSticks(dt) {
   const ox = tx - sx, oy = ty - sy, od = Math.hypot(ox, oy) || 1;
   const bx = ox / od, by = oy / od;
 
-  const sub = 4, h = dt / sub;
+  const sub = 5, h = dt / sub;
   for (let s = 0; s < sub; s++) {
-    stepPoint(P.a, h, bx * 620 * k, 1250 * k);
-    stepPoint(P.b, h, bx * 420 * k, 1250 * k);
-    for (let it = 0; it < 4; it++) {
+    /* 加重：重力更大、棍尖更沉，抡起来有惯性 */
+    stepPoint(P.a, h, bx * 620 * k, 1750 * k);
+    stepPoint(P.b, h, bx * 420 * k, 1950 * k);
+    for (let it = 0; it < 6; it++) {
       solveDist(S.hand, P.a, L1, true, false);
       solveDist(P.a, P.b, L2, false, false);
     }
@@ -1193,8 +1194,8 @@ function updateSticks(dt) {
   if (P.trail.length > 16) P.trail.shift();
 }
 function stepPoint(p, dt, ax, ay) {
-  const vx = (p.x - p.px) * 0.9990;
-  const vy = (p.y - p.py) * 0.9990;
+  const vx = (p.x - p.px) * 0.9986;
+  const vy = (p.y - p.py) * 0.9986;
   p.px = p.x; p.py = p.y;
   p.x += vx + ax * dt * dt;
   p.y += vy + ay * dt * dt;
@@ -1266,8 +1267,11 @@ function update(dt, rawDt) {
 
   // 走位（A/D）：步幅限制在交战距离以内，不会走成贴身
   const wantDir = (S.keyD ? 1 : 0) - (S.keyA ? 1 : 0);
-  S.stepDir += (wantDir - S.stepDir) * Math.min(1, dt * 14);
-  S.stepF = clamp(S.stepF + S.stepDir * dt * 0.9, 0, 1);
+  /* 加大摩擦力：起步更沉，松手立刻停住，不再滑行 */
+  const respond = wantDir === 0 ? 24 : 9;
+  S.stepDir += (wantDir - S.stepDir) * Math.min(1, dt * respond);
+  const rate = wantDir === 0 ? 1.8 : 0.55;
+  S.stepF = clamp(S.stepF + S.stepDir * dt * rate, 0, 1);
   L.px = L.pxBase + S.stepF * L.stepMax;
   L.shoulder.x = L.px + 18 * L.fk;
 
@@ -1302,7 +1306,7 @@ function update(dt, rawDt) {
     if (d < L.hitR) S.nearFrames++;
     /* 抡出去了但够不着 → 自动上步，不用先学走位也能打上 */
     const gy2 = L.groundY - 150 * L.fk;
-    const reachTip = 118 * L.fk * 2.05;
+    const reachTip = 106 * L.fk * 2.05;
     const gapNow = Math.hypot(L.dx - L.shoulder.x, gy2 - L.shoulder.y);
     if (gapNow > reachTip && (MV.t > 0 || S.mouse.x > L.shoulder.x + 90 * L.fk)) {
       /* 往木桩方向推到底还够不着 → 自动上步，直到棍尖能够到 */
@@ -1809,7 +1813,7 @@ function drawPlayer() {
   /* front arm (two-bone IK) */
   const sh = { x: 17 * k, y: -174 * k };
   const hand = { x: S.hand.x - bx, y: S.hand.y - gy };
-  const elbow = ik(sh, hand, 54 * k, 64 * k);
+  const elbow = ik(sh, hand, 48 * k, 58 * k);
   limb(sh.x, sh.y, elbow.x, elbow.y, 16 * k, 13 * k, skin);
   limb(elbow.x, elbow.y, hand.x, hand.y, 13 * k, 10 * k, skin);
 
