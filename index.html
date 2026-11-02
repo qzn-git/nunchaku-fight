@@ -836,6 +836,9 @@ function resize() {
   const mobile = W <= 860;
   const portrait = H > W;
   const topSafe = 132 * (H / 900);
+  /* 每次重算前先把底栏还原到默认贴底位置，保证测量基准一致 */
+  const botbarEl = document.querySelector('.botbar');
+  if (botbarEl) { botbarEl.style.top = ''; botbarEl.style.bottom = ''; }
   const dockEl = document.querySelector('.dock');
   const dockRect = dockEl ? dockEl.getBoundingClientRect() : null;
   let dockTopY;
@@ -865,6 +868,13 @@ function resize() {
   L.fk = fk;
   /* 木桩顶比人物头顶高约 0.5cm（人物头顶在 -238.6k） */
   L.dk = fk * (239.5 / 262);
+
+  /* 手机竖版：整条底栏在「地面线到屏幕底部」的区域内竖向居中 */
+  if (mobile && portrait && botbarEl) {
+    const bh = botbarEl.getBoundingClientRect().height;
+    botbarEl.style.top = ((L.groundY + H) / 2 - bh / 2).toFixed(1) + 'px';
+    botbarEl.style.bottom = 'auto';
+  }
 
   /* 间距自适应：按视口宽度比例定位，窄屏自动收窄 */
   /* 人物侧边距（肩+臂+棍）和木桩侧边距（木桩直径约 220*fk）独立计算 */
