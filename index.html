@@ -766,6 +766,11 @@ function resize() {
   }
   /* 脚下留出 36px 空隙，保证整条腿和脚都完整可见 */
   L.groundY = Math.max(topSafe + 262 * k + 12, dockTopY - 36);
+  /* 手机端人物与木桩整体上移 1.5cm（96dpi 下约 57px），不越过顶部安全区 */
+  if (mobile) {
+    const lift = 57;
+    L.groundY = Math.max(topSafe + 262 * k + 12, L.groundY - lift);
+  }
   let maxFs = (L.groundY - topSafe) / (262 * k);
   /* 角色整体再放大（人物与木桩同步），上限 1.8 倍 */
   L.fs = clamp(Math.min(1.8, maxFs), 1.05, 1.8);
