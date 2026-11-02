@@ -216,10 +216,11 @@ body{
 /* hints */
 .hintbar{
   position:absolute;left:clamp(16px,2.2vw,34px);bottom:clamp(24px,3vw,38px);
-  display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;
-  font-size:clamp(14px,.88vw,17px);font-weight:500;letter-spacing:.06em;
-  color:rgba(242,236,224,.9);text-shadow:0 1px 4px rgba(0,0,0,.95);max-width:44vw;
+  display:flex;flex-direction:column;align-items:flex-start;gap:9px;
+  font-size:clamp(13px,.86vw,16px);font-weight:500;letter-spacing:.06em;
+  color:rgba(242,236,224,.9);text-shadow:0 1px 4px rgba(0,0,0,.95);max-width:58vw;
 }
+.hintrow{display:flex;flex-wrap:nowrap;gap:10px 24px;align-items:center;white-space:nowrap}
 kbd{
   display:inline-flex;align-items:center;justify-content:center;
   font-family:var(--font-num);font-size:clamp(12px,.72vw,13px);line-height:1;
@@ -454,15 +455,19 @@ kbd{
     </div>
 
     <div class="hintbar">
-      <span><kbd>鼠标</kbd>甩棍</span>
-      <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
-      <span><kbd>A</kbd><kbd>D</kbd>走位</span>
-      <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd>绝招</span>
-      <span><kbd>空格</kbd>闪避</span>
-      <span><kbd>Esc</kbd>暂停</span>
-      <button class="sndbtn" id="sndBtn" title="音效开关">
-        <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
-      </button>
+      <div class="hintrow">
+        <span><kbd>A</kbd><kbd>D</kbd>走位</span>
+        <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd>绝招</span>
+        <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
+      </div>
+      <div class="hintrow">
+        <span><kbd>鼠标</kbd>甩棍</span>
+        <span><kbd>空格</kbd>闪避</span>
+        <span><kbd>Esc</kbd>暂停</span>
+        <button class="sndbtn" id="sndBtn" title="音效开关">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="dock" id="dock"></div>
@@ -772,10 +777,10 @@ function resize() {
   const dummySide = 112 * fk;
   const minGap = 170 * fk;
   L.pxBase = Math.max(charSide, W * 0.24);
-  /* 木桩整体左移约 2cm（96dpi 下约 76px），并保证与人物仍留有足够间距 */
+  /* 木桩整体左移约 3cm（96dpi 下约 114px），并保证与人物仍留有足够间距 */
   const dummyTarget = Math.min(W - dummySide, W * 0.76);
   const shiftRoom = dummyTarget - L.pxBase - minGap - 16;
-  L.dx = dummyTarget - Math.max(0, Math.min(76, shiftRoom));
+  L.dx = dummyTarget - Math.max(0, Math.min(114, shiftRoom));
   if (L.dx - L.pxBase < minGap) {
     /* 极窄屏：按比例压缩间距，优先保证不裁剪 */
     L.pxBase = Math.max(charSide, (W - minGap) * 0.42);
