@@ -753,6 +753,7 @@ function resize() {
      避免头顶撞顶部血条、脚下压底部技能坞 */
   /* 直接量取底部技能坞的真实位置，避免用 CSS clamp 公式估算产生 8px 误差 */
   const mobile = W <= 860;
+  const portrait = H > W;
   const topSafe = 132 * (H / 900);
   const dockEl = document.querySelector('.dock');
   const dockRect = dockEl ? dockEl.getBoundingClientRect() : null;
@@ -766,10 +767,15 @@ function resize() {
   }
   /* 脚下留出 36px 空隙，保证整条腿和脚都完整可见 */
   L.groundY = Math.max(topSafe + 262 * k + 12, dockTopY - 36);
-  /* 手机端人物与木桩整体上移 1.5cm（96dpi 下约 57px），不越过顶部安全区 */
-  if (mobile) {
-    const lift = 57;
-    L.groundY = Math.max(topSafe + 262 * k + 12, L.groundY - lift);
+  /* 手机竖版：人物与木桩在顶部 HUD 与底部操作区之间竖向居中；
+     手机横版暂时沿用整体上移 1.5cm（96dpi 下约 57px） */
+  if (mobile && portrait) {
+    const bandTop = topSafe + 12;
+    const bandBottom = dockTopY - 36;
+    const fkMax = k * 1.8;
+    L.groundY = Math.min(bandBottom, (bandTop + bandBottom) / 2 + 239.5 * fkMax / 2);
+  } else if (mobile) {
+    L.groundY = Math.max(topSafe + 262 * k + 12, L.groundY - 57);
   }
   let maxFs = (L.groundY - topSafe) / (262 * k);
   /* 角色整体再放大（人物与木桩同步），上限 1.8 倍 */
@@ -784,18 +790,25 @@ function resize() {
   const charSide = Math.max(36 * fk, W * 0.08);
   const dummySide = 112 * fk;
   const minGap = 170 * fk;
-  L.pxBase = Math.max(charSide, W * 0.24);
-  /* 木桩整体左移约 3cm（96dpi 下约 114px），并保证与人物仍留有足够间距 */
-  const dummyTarget = Math.min(W - dummySide, W * 0.76);
-  const shiftRoom = dummyTarget - L.pxBase - minGap - 16;
-  L.dx = dummyTarget - Math.max(0, Math.min(114, shiftRoom));
-  if (L.dx - L.pxBase < minGap) {
-    /* 极窄屏：按比例压缩间距，优先保证不裁剪 */
-    L.pxBase = Math.max(charSide, (W - minGap) * 0.42);
-    L.dx = L.pxBase + minGap;
-    if (L.dx + dummySide > W) {
-      L.dx = W - dummySide;
-      L.pxBase = Math.max(charSide, L.dx - minGap);
+  if (mobile && portrait) {
+    /* 竖版：人物与木桩各自贴住左右安全边距，在全身可见的前提下把间距拉到最大 */
+    const padX = 10;
+    L.pxBase = padX + 60 * fk;
+    L.dx = W - padX - 62 * L.dk;
+  } else {
+    L.pxBase = Math.max(charSide, W * 0.24);
+    /* 木桩整体左移约 3cm（96dpi 下约 114px），并保证与人物仍留有足够间距 */
+    const dummyTarget = Math.min(W - dummySide, W * 0.76);
+    const shiftRoom = dummyTarget - L.pxBase - minGap - 16;
+    L.dx = dummyTarget - Math.max(0, Math.min(114, shiftRoom));
+    if (L.dx - L.pxBase < minGap) {
+      /* 极窄屏：按比例压缩间距，优先保证不裁剪 */
+      L.pxBase = Math.max(charSide, (W - minGap) * 0.42);
+      L.dx = L.pxBase + minGap;
+      if (L.dx + dummySide > W) {
+        L.dx = W - dummySide;
+        L.pxBase = Math.max(charSide, L.dx - minGap);
+      }
     }
   }
   L.stepMax = Math.min(214 * fk, (L.dx - L.pxBase) * 0.72);
