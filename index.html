@@ -249,6 +249,22 @@ kbd{
 .stancepanel__desc{font-size:clamp(13px,.76vw,15px);letter-spacing:.04em;color:rgba(255,253,248,.95);margin-top:10px;background:rgba(3,6,9,.82);border:1px solid rgba(242,236,224,.13);padding:4px 10px;display:inline-block}
 .stancepanel__desc b{font-family:var(--font-num);font-weight:600;color:var(--gold);letter-spacing:0}
 
+/* 手机专用控制：左右移动 / 基础招式（桌面隐藏） */
+.movepad,.basicpad{display:none}
+.mbtn,.basic{
+  background:linear-gradient(165deg,rgba(20,26,32,.92),rgba(6,9,12,.9));
+  border:1px solid rgba(242,236,224,.16);
+  color:rgba(242,236,224,.78);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  display:grid;place-items:center;padding:0;cursor:pointer;
+  transition:border-color .18s,color .18s,background .18s;
+  font-family:var(--font-display);
+}
+.mbtn svg{width:52%;height:52%;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.mbtn.is-down,.mbtn:active{color:var(--gold);border-color:rgba(255,207,58,.55);background:linear-gradient(165deg,rgba(255,207,58,.18),rgba(6,9,12,.9))}
+.basic{color:var(--gold);letter-spacing:0}
+.basic:active{background:linear-gradient(165deg,rgba(255,207,58,.2),rgba(6,9,12,.9))}
+
 /* ============ screens ============ */
 .screen{
   position:absolute;inset:0;display:grid;place-items:center;z-index:20;
@@ -381,6 +397,55 @@ kbd{
   }
   .stancepanel__desc{display:none}
 }
+
+/* 手机竖版底部：左侧走位 / 中间绝招 / 右上架势 / 右下基础招式 */
+@media (max-width:860px) and (orientation:portrait){
+  .botbar{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:"move skills stance" "move skills basic";
+    align-items:center;
+    column-gap:clamp(4px,1.2vw,10px);
+    row-gap:6px;
+    bottom:10px;
+    padding:0 clamp(6px,2vw,12px);
+    padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
+  }
+  .hintbar{display:none}
+  .movepad{
+    grid-area:move;justify-self:start;
+    display:flex;align-items:center;gap:clamp(4px,1.2vw,8px);
+  }
+  .mbtn{
+    width:clamp(30px,8.6vw,42px);height:clamp(30px,8.6vw,42px);
+  }
+  .dock{
+    grid-area:skills;justify-self:stretch;align-self:stretch;
+    display:flex;align-items:center;justify-content:center;
+    gap:clamp(4px,1.2vw,8px);
+  }
+  .skill{
+    width:clamp(30px,8.6vw,42px);height:clamp(30px,8.6vw,42px);
+  }
+  .skill__face svg{width:46%;height:46%}
+  .skill__name,.skill__key,.skill__chg{display:none !important}
+  .stancepanel{grid-area:stance;justify-self:end;align-self:end;text-align:right}
+  .stancepanel__label{font-size:9px;letter-spacing:.3em;margin-bottom:4px}
+  .stances{gap:4px}
+  .stance{
+    width:clamp(28px,7.4vw,34px);height:clamp(28px,7.4vw,34px);
+    font-size:clamp(13px,3.4vw,16px);
+  }
+  .stancepanel__desc{display:none}
+  .basicpad{
+    grid-area:basic;justify-self:end;align-self:start;
+    display:flex;gap:clamp(4px,1.2vw,8px);
+  }
+  .basic{
+    width:clamp(30px,8.6vw,42px);height:clamp(26px,7.4vw,34px);
+    font-size:clamp(15px,4vw,19px);
+  }
+}
 </style>
 </head>
 <body>
@@ -453,6 +518,15 @@ kbd{
 
     <!-- 底部统一横栏：键位提示 / 绝招技能 / 架势与状态，同一水平中轴 -->
     <div class="botbar">
+      <div class="movepad" id="movePad">
+        <button class="mbtn" data-move="left" aria-label="左移">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="mbtn" data-move="right" aria-label="右移">
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
       <div class="hintbar">
         <div class="hintrow">
           <span><kbd>A</kbd><kbd>D</kbd>走位</span>
@@ -479,6 +553,12 @@ kbd{
           <button class="stance" data-stance="burst">爆</button>
         </div>
         <div class="stancepanel__desc" id="stanceDesc">伤害 ×1.0 ・ 受伤 ×1.0</div>
+      </div>
+
+      <div class="basicpad" id="basicPad">
+        <button class="basic" data-move="chop" aria-label="劈">劈</button>
+        <button class="basic" data-move="flick" aria-label="撩">撩</button>
+        <button class="basic" data-move="sweep" aria-label="扫">扫</button>
       </div>
     </div>
   </div>
@@ -835,6 +915,8 @@ window.addEventListener('resize', resize);
    input
    ============================================================ */
 function trackPointer(e) {
+  /* 触摸底部控制栏时不要把甩棍的手拽到按键位置 */
+  if (e.target && e.target.closest && e.target.closest('.botbar')) return;
   const r = canvas.getBoundingClientRect();
   S.mouse.x = e.clientX - r.left;
   S.mouse.y = e.clientY - r.top;
@@ -872,6 +954,31 @@ window.addEventListener('keydown', e => {
 $('#stances').addEventListener('click', e => {
   const b = e.target.closest('[data-stance]');
   if (b) setStance(b.dataset.stance);
+});
+
+/* 手机端：按住左右图标走位 */
+$('#movePad').querySelectorAll('[data-move]').forEach(btn => {
+  const dir = btn.dataset.move;
+  const set = on => {
+    if (dir === 'left') S.keyA = on; else S.keyD = on;
+    btn.classList.toggle('is-down', on);
+  };
+  btn.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    btn.setPointerCapture(e.pointerId);
+    if (SFX.on) SFX.ready();
+    set(true);
+  });
+  btn.addEventListener('pointerup', () => set(false));
+  btn.addEventListener('pointercancel', () => set(false));
+});
+
+/* 手机端：基础招式 劈 / 撩 / 扫 */
+$('#basicPad').addEventListener('click', e => {
+  const b = e.target.closest('[data-move]');
+  if (!b) return;
+  const idx = MOVES.findIndex(m => m.id === b.dataset.move);
+  if (idx >= 0) doMove(idx);
 });
 
 /* 走位：A/D 或 左右方向键 */
