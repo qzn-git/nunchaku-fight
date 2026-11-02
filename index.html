@@ -124,18 +124,6 @@ body{
 }
 .stage__timer{font-family:var(--font-num);font-size:11px;letter-spacing:.28em;color:var(--paper-dim)}
 
-/* buffs（并入右下架势面板，与「架 势」标签同排） */
-.stancepanel__head{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:8px}
-.buffrow{display:flex;gap:6px;justify-content:flex-end}
-.buff{
-  position:relative;width:30px;height:30px;display:grid;place-items:center;overflow:hidden;
-  font-family:var(--font-display);font-size:14px;color:rgba(242,236,224,.86);
-  background:linear-gradient(160deg,rgba(30,36,42,.92),rgba(6,9,12,.88));
-  border:1px solid rgba(242,236,224,.15);
-  clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);
-}
-.buff::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% -10%,rgba(255,207,58,.16),transparent 70%)}
-.buff[data-off]{opacity:.45}
 
 /* combo */
 .combopanel{
@@ -247,7 +235,7 @@ kbd{
 
 /* stance */
 .stancepanel{justify-self:end;text-align:right}
-.stancepanel__label{font-size:clamp(12px,.72vw,13px);letter-spacing:.42em;color:rgba(242,236,224,.72);margin:0;text-shadow:0 1px 4px rgba(0,0,0,.95)}
+.stancepanel__label{font-size:clamp(12px,.72vw,13px);letter-spacing:.42em;color:rgba(242,236,224,.72);margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.95)}
 .stances{display:flex;gap:7px;justify-content:flex-end}
 .stance{
   width:clamp(38px,2.4vw,48px);height:clamp(38px,2.4vw,48px);
@@ -362,7 +350,6 @@ kbd{
 }
 
 @media (max-width:860px){
-  .buffrow{display:none}
   .combopanel{top:24%}
   /* ---- 手机上底栏改为纵向堆叠：技能坞贴底居中，架势面板在其上方 ---- */
   .botbar{
@@ -385,8 +372,7 @@ kbd{
   .skill__chg{display:none !important}
   /* ---- 架势面板：右对齐，跟在技能坞上方 ---- */
   .stancepanel{align-self:flex-end}
-  .stancepanel__head{margin-bottom:5px}
-  .stancepanel__label{font-size:10px;letter-spacing:.3em}
+  .stancepanel__label{font-size:10px;letter-spacing:.3em;margin-bottom:5px}
   .stances{gap:5px}
   .stance{
     width:clamp(32px,8vw,40px);
@@ -486,14 +472,7 @@ kbd{
       <div class="dock" id="dock"></div>
 
       <div class="stancepanel">
-        <div class="stancepanel__head">
-          <div class="buffrow">
-            <div class="buff" title="疾风 · 攻速 +15%">疾</div>
-            <div class="buff" title="铁壁 · 减伤 20%">壁</div>
-            <div class="buff" id="buffQi" title="炁·充盈 · 绝招就绪" data-off>炁</div>
-          </div>
-          <div class="stancepanel__label">架 势</div>
-        </div>
+        <div class="stancepanel__label">架 势</div>
         <div class="stances" id="stances">
           <button class="stance" data-stance="guard">守</button>
           <button class="stance is-on" data-stance="attack">攻</button>
@@ -750,7 +729,7 @@ const ui = {
   hud: $('#hud'), pHp: $('#pHp'), pHpG: $('#pHpGhost'), pQi: $('#pQi'), pQiNum: $('#pQiNum'),
   eHp: $('#eHp'), eHpG: $('#eHpGhost'), eStagger: $('#eStagger'), eTag: $('#eTag'),
   combo: $('#comboPanel'), comboNum: $('#comboNum'), comboRank: $('#comboRank'), comboMult: $('#comboMult'),
-  timer: $('#stageTimer'), buffQi: $('#buffQi'),
+  timer: $('#stageTimer'),
   stanceDesc: $('#stanceDesc'), flash: $('#flashLayer'), hurt: $('#hurtLayer'),
   title: $('#titleScreen'), pause: $('#pauseScreen'), win: $('#winScreen'), lose: $('#loseScreen'),
 };
@@ -788,7 +767,8 @@ function resize() {
   /* 脚下留出 36px 空隙，保证整条腿和脚都完整可见 */
   L.groundY = Math.max(topSafe + 262 * k + 12, dockTopY - 36);
   let maxFs = (L.groundY - topSafe) / (262 * k);
-  L.fs = clamp(Math.min(1.55, maxFs), 1.05, 1.55);
+  /* 角色整体再放大（人物与木桩同步），上限 1.8 倍 */
+  L.fs = clamp(Math.min(1.8, maxFs), 1.05, 1.8);
   const fk = k * L.fs;
   L.fk = fk;
 
@@ -811,7 +791,7 @@ function resize() {
       L.pxBase = Math.max(charSide, L.dx - minGap);
     }
   }
-  L.stepMax = 214 * fk;
+  L.stepMax = Math.min(214 * fk, (L.dx - L.pxBase) * 0.72);
   L.px = L.pxBase + S.stepF * L.stepMax;
   L.hitR = 68 * fk;
   L.shoulder = { x: L.px + 18 * fk, y: L.groundY - 176 * fk };
@@ -823,9 +803,9 @@ function resize() {
     S.mouseInit = true;
   }
   if (!P.a.x) {
-    P.a.x = S.hand.x + 72 * fk; P.a.y = S.hand.y - 34 * fk;
+    P.a.x = S.hand.x + 34 * fk; P.a.y = S.hand.y - 8 * fk;
     P.a.px = P.a.x; P.a.py = P.a.y;
-    P.b.x = P.a.x + 72 * fk; P.b.y = P.a.y + 12 * fk;
+    P.b.x = P.a.x + 34 * fk; P.b.y = P.a.y + 6 * fk;
     P.b.px = P.b.x; P.b.py = P.b.y;
   }
 }
@@ -1151,9 +1131,9 @@ $('#sndBtn').addEventListener('click', e => {
    ============================================================ */
 function updateSticks(dt) {
   const k = L.fk;
-  /* 统一：手臂 83k（上臂 38 + 前臂 45），手最低点约在大腿中段 */
+  /* 手臂总长 83k；双节棍两节共 76k，手臂下垂时棍尖停在脚踝以上 */
   const armLen = 83 * k;
-  const L1 = 64 * k, L2 = 64 * k;
+  const L1 = 38 * k, L2 = 38 * k;
   const reach = armLen * 0.97;
 
   // hand target = mouse clamped around shoulder
@@ -1417,8 +1397,6 @@ function syncHUD() {
   ui.eStagger.style.background = 'linear-gradient(90deg,#7d1408,#ff6a4d)';
   const tm = fmtTime(S.fightTime);
   if (hudCache.tm !== tm) { ui.timer.textContent = tm; hudCache.tm = tm; }
-  const qiReady = S.qi >= 100;
-  if (hudCache.bq !== qiReady) { ui.buffQi.toggleAttribute('data-off', !qiReady); hudCache.bq = qiReady; }
 }
 
 /* ============================================================
