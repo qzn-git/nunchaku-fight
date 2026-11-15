@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>龍棍 · DRAGON NUNCHAKU — 宣传片</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#05070a;color:#f2ece0;overflow:hidden;cursor:pointer;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+body{position:fixed;inset:0}
+
+/* ============ 字体 ============ */
+.title-font{font-family:"Kaiti SC","KaiTi","STKaiti","Songti SC",serif}
+.num-font{font-family:"Bahnschrift","DIN Alternate",monospace;letter-spacing:.05em}
+
+/* ============ 色调 ============ */
+:root{
+  --ink:#05070a;
+  --gold:#ffcf3a;
+  --gold-soft:rgba(255,207,58,.55);
+  --gold-dim:rgba(255,207,58,.25);
+  --blood:#e33b2c;
+  --paper:#f2ece0;
+}
+
+/* ============ 主舞台 ============ */
+.stage{position:absolute;inset:0;overflow:hidden;background:var(--ink)}
+
+/* ============ 全局特效层 ============ */
+.fx{position:absolute;inset:0;pointer-events:none;z-index:50}
+.fx-vignette{background:radial-gradient(120% 92% at 50% 44%,transparent 38%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.88) 100%)}
+.fx-grain{opacity:.12;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E")}
+.fx-flash{opacity:0;background:radial-gradient(circle at 50% 52%,rgba(255,226,150,.55),rgba(255,140,60,.12) 45%,transparent 72%)}
+.fx-hurt{opacity:0;background:radial-gradient(130% 100% at 50% 50%,transparent 45%,rgba(227,59,44,.55) 100%)}
+.fx-scanline{background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.02) 3px 4px);opacity:.5}
+.fx-ink-spray{opacity:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(0,0,0,.7) 0%,transparent 40%);transition:opacity .3s}
+
+/* ============ 幻灯片 ============ */
+.slide{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(1.04);
+  transition:opacity 1.2s ease,transform 1.8s cubic-bezier(.2,.8,.2,1);
+  z-index:10;
+  will-change:opacity,transform;
+}
+.slide.active{opacity:1;transform:scale(1)}
+.slide.prev{opacity:0;transform:scale(.96)}
+
+.slide img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  filter:contrast(1.05) saturate(1.1);
+  box-shadow:0 0 80px rgba(0,0,0,.8),0 0 200px rgba(0,0,0,.4);
+  border-radius:4px;
+}
+
+/* ============ 幻灯片文字叠加 ============ */
+.overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  justify-content:flex-end;align-items:center;
+  padding:0 40px 60px;
+  z-index:20;pointer-events:none;
+  background:linear-gradient(0deg,rgba(5,7,10,.92) 0%,rgba(5,7,10,.6) 30%,transparent 60%);
+}
+
+.tagline{
+  font-size:clamp(22px,3.5vw,42px);
+  color:var(--gold);
+  letter-spacing:.25em;
+  font-weight:300;
+  text-shadow:0 0 30px var(--gold-dim),0 2px 20px rgba(0,0,0,.8);
+  opacity:0;transform:translateY(20px);
+  transition:opacity .9s ease .6s,transform .9s ease .6s;
+}
+.slide.active .tagline{opacity:1;transform:translateY(0)}
+
+.subtitle{
+  margin-top:18px;
+  font-size:clamp(13px,1.6vw,18px);
+  color:rgba(242,236,224,.7);
+  letter-spacing:.15em;
+  opacity:0;transform:translateY(15px);
+  transition:opacity .9s ease .9s,transform .9s ease .9s;
+}
+.slide.active .subtitle{opacity:1;transform:translateY(0)}
+
+/* ============ 顶部标题条 ============ */
+.topbar{
+  position:absolute;top:0;left:0;right:0;
+  padding:clamp(12px,2vw,24px) clamp(16px,3vw,40px);
+  display:flex;justify-content:space-between;align-items:center;
+  z-index:40;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,7,10,.85),transparent);
+}
+.topbar .brand{
+  display:flex;align-items:center;gap:12px;
+}
+.topbar .seal{
+  width:clamp(28px,3vw,40px);height:clamp(28px,3vw,40px);
+  background:linear-gradient(135deg,#c0392b,#e74c3c);
+  clip-path:polygon(12% 0,88% 0,100% 12%,100% 88%,88% 100%,12% 100%,0 88%,0 12%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(10px,1.2vw,14px);
+  font-weight:700;color:#fff;
+  letter-spacing:.1em;
+}
+.topbar .brand-text{
+  display:flex;flex-direction:column;line-height:1.1;
+}
+.topbar .brand-cn{
+  font-family:"Kaiti SC","KaiTi",serif;
+  font-size:clamp(14px,1.6vw,20px);
+  color:var(--gold);font-weight:600;
+  letter-spacing:.2em;
+}
+.topbar .brand-en{
+  font-size:clamp(8px,.8vw,11px);
+  color:rgba(242,236,224,.4);
+  letter-spacing:.4em;text-transform:uppercase;
+}
+
+.topbar .counter{
+  font-size:clamp(11px,1.2vw,14px);
+  color:rgba(242,236,224,.5);
+  letter-spacing:.3em;
+}
+.topbar .counter b{color:var(--gold)}
+
+/* ============ 进度条 ============ */
+.progress{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:rgba(255,255,255,.08);
+  z-index:45;
+}
+.progress-bar{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--gold),#ffe89a);
+  box-shadow:0 0 10px var(--gold-dim);
+  transition:width .1s linear;
+}
+
+/* ============ 底部控制 ============ */
+.controls{
+  position:absolute;bottom:20px;left:50%;
+  transform:translateX(-50%);
+  display:flex;gap:12px;align-items:center;
+  z-index:40;pointer-events:auto;
+}
+.dot{
+  width:clamp(8px,1vw,12px);height:clamp(8px,1vw,12px);
+  border-radius:50%;
+  background:rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.4);
+  cursor:pointer;
+  transition:all .4s ease;
+}
+.dot.active{
+  background:var(--gold);
+  border-color:var(--gold);
+  box-shadow:0 0 12px var(--gold-dim),0 0 24px var(--gold-dim);
+  transform:scale(1.3);
+}
+
+.play-btn{
+  width:clamp(32px,3.5vw,48px);height:clamp(32px,3.5vw,48px);
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.25);
+  color:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:all .3s ease;
+  backdrop-filter:blur(10px);
+}
+.play-btn:hover{background:rgba(255,207,58,.15);border-color:var(--gold)}
+.play-btn svg{width:50%;height:50%}
+
+/* ============ 封面页特效 ============ */
+.slide-cover .slide-img-wrap{
+  animation:coverGlow 3s ease-in-out infinite alternate;
+}
+@keyframes coverGlow{
+  0%{filter:drop-shadow(0 0 30px rgba(255,207,58,.3)) brightness(1)}
+  100%{filter:drop-shadow(0 0 60px rgba(255,207,58,.5)) brightness(1.08)}
+}
+
+/* ============ 战斗页特效 ============ */
+.slide-battle.fx-active .slide-img-wrap{
+  animation:battleShake .08s ease-in-out infinite;
+}
+@keyframes battleShake{
+  0%,100%{transform:translate(0,0)}
+  25%{transform:translate(-2px,1px)}
+  50%{transform:translate(1px,-1px)}
+  75%{transform:translate(-1px,2px)}
+}
+
+/* ============ 结算页特效 ============ */
+.slide-result .slide-img-wrap{
+  animation:resultZoom 4s ease-out forwards;
+}
+@keyframes resultZoom{
+  0%{transform:scale(1.05)}
+  100%{transform:scale(1.08)}
+}
+
+/* ============ 刀剑光效 ============ */
+.slash-light{
+  position:absolute;inset:0;pointer-events:none;z-index:30;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,207,58,.3) 45%,rgba(255,226,150,.5) 50%,rgba(255,207,58,.3) 55%,transparent 70%);
+  transform:translateX(-100%);
+  opacity:0;
+}
+.slide-battle.active .slash-light{
+  animation:slash 3s ease-in-out infinite;
+}
+@keyframes slash{
+  0%,70%{transform:translateX(-100%);opacity:0}
+  72%{opacity:.8}
+  75%{transform:translateX(100%);opacity:0}
+}
+
+/* ============ 墨迹粒子 ============ */
+.ink-particle{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:rgba(255,207,58,.8);
+  pointer-events:none;z-index:35;
+  box-shadow:0 0 12px var(--gold-dim);
+}
+
+/* ============ 结算弹出动画 ============ */
+.slide-result .tagline{
+  animation:resultAppear 1.2s cubic-bezier(.2,.8,.2,1) .6s both;
+}
+@keyframes resultAppear{
+  0%{opacity:0;transform:translateY(40px) scale(.8);letter-spacing:.5em}
+  60%{opacity:1;transform:translateY(-8px) scale(1.05);letter-spacing:.25em}
+  100%{opacity:1;transform:translateY(0) scale(1);letter-spacing:.25em}
+}
+
+/* ============ 印章动画 ============ */
+.slide-cover .seal-stamp{
+  position:absolute;
+  top:clamp(50px,8vw,120px);right:clamp(50px,10vw,160px);
+  width:clamp(50px,7vw,90px);height:clamp(50px,7vw,90px);
+  background:linear-gradient(135deg,#b03a2e,#e74c3c);
+  clip-path:polygon(10% 0,90% 0,100% 10%,100% 90%,90% 100%,10% 100%,0 90%,0 10%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Kaiti SC",serif;
+  font-size:clamp(16px,2.2vw,28px);
+  color:rgba(255,255,255,.9);font-weight:700;
+  transform:rotate(-15deg) scale(0);
+  opacity:0;
+  z-index:25;
+  animation:stampIn 1.5s cubic-bezier(.5,1.6,.5,1) 2s forwards;
+  box-shadow:0 4px 20px rgba(231,76,60,.5);
+}
+@keyframes stampIn{
+  0%{transform:rotate(-45deg) scale(0);opacity:0}
+  60%{transform:rotate(-12deg) scale(1.2);opacity:1}
+  100%{transform:rotate(-15deg) scale(1);opacity:1}
+}
+
+/* ============ 呼吸光晕 ============ */
+.aura{
+  position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(circle at 50% 50%,var(--gold-dim) 0%,transparent 50%);
+  opacity:0;
+}
+.slide.active .aura{animation:auraBreathe 4s ease-in-out infinite}
+@keyframes auraBreathe{
+  0%,100%{opacity:0;transform:scale(.9)}
+  50%{opacity:.4;transform:scale(1.1)}
+}
+
+/* ============ 滚动提示 ============ */
+.hint{
+  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+  font-size:11px;color:rgba(242,236,224,.4);letter-spacing:.3em;
+  z-index:40;animation:hintPulse 2s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes hintPulse{
+  0%,100%{opacity:.3}
+  50%{opacity:.8}
+}
+
+/* ============ 闪白效果 ============ */
+.flash-trigger .fx-flash{
+  animation:flashWhite .5s ease-out;
+}
+@keyframes flashWhite{
+  0%{opacity:0}
+  20%{opacity:.7}
+  100%{opacity:0}
+}
+
+/* ============ 受伤红屏 ============ */
+.hurt-trigger .fx-hurt{
+  animation:hurtRed .4s ease-out;
+}
+@keyframes hurtRed{
+  0%{opacity:0}
+  30%{opacity:.6}
+  100%{opacity:0}
+}
+
+/* ============ 图片包装 ============ */
+.slide-img-wrap{
+  position:relative;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+/* ============ 水印 ============ */
+.watermark{
+  position:absolute;
+  bottom:16px;right:20px;
+  font-size:10px;color:rgba(242,236,224,.25);
+  letter-spacing:.2em;
+  z-index:50;pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- 特效层 -->
+  <div class="fx fx-vignette"></div>
+  <div class="fx fx-grain"></div>
+  <div class="fx fx-scanline"></div>
+  <div class="fx fx-flash" id="flash"></div>
+  <div class="fx fx-hurt" id="hurt"></div>
+
+  <!-- 顶部条 -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="seal">龍</div>
+      <div class="brand-text">
+        <div class="brand-cn">龍棍</div>
+        <div class="brand-en">DRAGON NUNCHAKU</div>
+      </div>
+    </div>
+    <div class="counter"><b id="slide-num">01</b> / 03</div>
+  </div>
+
+  <!-- 进度条 -->
+  <div class="progress"><div class="progress-bar" id="bar"></div></div>
+
+  <!-- 幻灯片 1: 封面 -->
+  <div class="slide slide-cover active" data-idx="0">
+    <div class="aura"></div>
+    <div class="seal-stamp">藏</div>
+    <div class="slide-img-wrap">
+      <img src="promo-cover.png" alt="封面">
+    </div>
+    <div class="overlay">
+      <div class="tagline title-font">一寸短 · 一寸险</div>
+      <div class="subtitle">竹棚夜雨 · 木人桩对练</div>
+    </div>
+  </div>
+
+  <!-- 幻灯片 2: 战斗 -->
+  <div class="slide slide-battle" data-idx="1">
+    <div class="aura"></div>
+    <div class="slash-light"></div>
+    <div class="slide-img-wrap">
+      <img src="promo-battle.png" alt="战斗">
+    </div>
+    <div class="overlay">
+      <div class="tagline">棍风乍起 · 炁贯全身</div>
+      <div class="subtitle">Q/W/E/R 绝招连携 · 架势瞬息万变</div>
+    </div>
+  </div>
+
+  <!-- 幻灯片 3: 结算 -->
+  <div class="slide slide-result" data-idx="2">
+    <div class="aura"></div>
+    <div class="slide-img-wrap">
+      <img src="promo-result.png" alt="结算">
+    </div>
+    <div class="overlay">
+      <div class="tagline title-font">木人已碎</div>
+      <div class="subtitle">用时 00:11 · 14 连击 · 总伤害 2126</div>
+    </div>
+  </div>
+
+  <!-- 底部控制 -->
+  <div class="controls">
+    <div class="dot active" data-goto="0"></div>
+    <div class="dot" data-goto="1"></div>
+    <div class="dot" data-goto="2"></div>
+    <button class="play-btn" id="playBtn" title="暂停/播放">
+      <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon">
+        <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="hint">点击 / 左右滑动切换</div>
+  <div class="watermark">DRAGON NUNCHAKU · 雙生視界</div>
+
+</div>
+
+<!-- 音量按钮 -->
+<button class="vol-btn" id="volBtn" title="音乐开关" style="position:absolute;top:clamp(12px,2vw,24px);right:clamp(16px,3vw,40px);z-index:45;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:clamp(32px,3.5vw,44px);height:clamp(32px,3.5vw,44px);color:#ffcf3a;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .3s ease;">
+  <svg viewBox="0 0 24 24" fill="currentColor" id="volIcon" style="width:55%;height:55%"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+</button>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dots = document.querySelectorAll('.dot');
+const numEl = document.getElementById('slide-num');
+const bar = document.getElementById('bar');
+const playBtn = document.getElementById('playBtn');
+const playIcon = document.getElementById('playIcon');
+const volBtn = document.getElementById('volBtn');
+const volIcon = document.getElementById('volIcon');
+const flash = document.getElementById('flash');
+const hurt = document.getElementById('hurt');
+const stage = document.getElementById('stage');
+
+const SLIDE_TIME = 4200;
+let current = 0;
+let playing = true;
+let progress = 0;
+let lastTime = performance.now();
+let rafId;
+
+const playIconPath = 'M6 4h4v16H6zM14 4h4v16h-4z';
+const pauseIconPath = 'M8 5v14l11-7z';
+const volOnPath = 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z';
+const volOffPath = 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z';
+
+// ============ 武侠 BGM 引擎 ============
+let audioCtx = null;
+let masterGain = null;
+let bgmStarted = false;
+let musicOn = true;
+let tempo = 0.5;          // 节奏系数(封面慢,战斗快)
+let musicTickCount = 0;
+let musicTimer = null;
+
+// 五声音阶(宫商角徵羽) G 大调: G A B D E
+const PENTATONIC = [392.00, 440.00, 493.88, 587.33, 659.25];
+const PENTATONIC_LOW = [196.00, 220.00, 246.94, 293.66, 329.63];
+const BASS_NOTES = [98.00, 110.00, 82.41, 73.42]; // G2 A2 E2 D2 低频
+
+function initAudio(){
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.35;
+  masterGain.connect(audioCtx.destination);
+}
+
+// 梆子/木鱼 - 短促木质敲击
+function playWood(t, volume = 0.3){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 1800;
+  filter.Q.value = 3;
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(1600, t);
+  osc.frequency.exponentialRampToValueAtTime(400, t + 0.04);
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.15);
+}
+
+// 锣 - 金属打击
+function playGong(t, volume = 0.25){
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const oscGain1 = audioCtx.createGain();
+  const oscGain2 = audioCtx.createGain();
+  osc1.type = 'sawtooth';
+  osc2.type = 'square';
+  osc1.frequency.value = 140 + Math.random() * 30;
+  osc2.frequency.value = 200 + Math.random() * 50;
+  oscGain1.gain.value = 0.4;
+  oscGain2.gain.value = 0.15;
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+  osc1.connect(oscGain1); osc2.connect(oscGain2);
+  oscGain1.connect(gain); oscGain2.connect(gain);
+  gain.connect(masterGain);
+  osc1.start(t); osc2.start(t);
+  osc1.stop(t + 1.6); osc2.stop(t + 1.6);
+}
+
+// 鼓/底鼓 - 低频冲击
+function playDrum(t, volume = 0.4){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(120, t);
+  osc.frequency.exponentialRampToValueAtTime(35, t + 0.15);
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.3);
+}
+
+// 箫声 - 悠扬旋律(双振荡器 + 颤音)
+function playXiao(t, freq, duration = 0.6, volume = 0.2){
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const tremolo = audioCtx.createOscillator();
+  const tremGain = audioCtx.createGain();
+  tremolo.frequency.value = 5;
+  tremGain.gain.value = 0.03;
+  osc1.type = 'sine';
+  osc2.type = 'triangle';
+  osc1.frequency.value = freq;
+  osc2.frequency.value = freq * 2;
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(volume, t + 0.08);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  tremolo.connect(tremGain); tremGain.connect(gain.gain);
+  osc1.connect(gain); osc2.connect(gain);
+  gain.connect(masterGain);
+  osc1.start(t); osc2.start(t); tremolo.start(t);
+  osc1.stop(t + duration + 0.05); osc2.stop(t + duration + 0.05); tremolo.stop(t + duration + 0.05);
+}
+
+// 低音铺垫 - Bass note
+function playBass(t, freq, duration = 1.2, volume = 0.18){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 400;
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.linearRampToValueAtTime(volume * 0.7, t + duration * 0.5);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc.stop(t + duration + 0.1);
+}
+
+// 镲片 - 高频金属声
+function playCymbal(t, volume = 0.12){
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.3, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
+  }
+  const src = audioCtx.createBufferSource();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+  src.buffer = buffer;
+  filter.type = 'highpass';
+  filter.frequency.value = 3000;
+  gain.gain.setValueAtTime(volume, t);
+  src.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  src.start(t);
+}
+
+// ===== 主旋律 (G 大调五声音阶) =====
+// 封面: 缓慢悠扬 → 战斗: 急促紧张 → 结算: 收束
+const MELODY_INTRO  = [0, 2, 1, 0, 4, 2, 1, 0];      // 封面: 宫角商宫羽角商宫
+const MELODY_FIGHT  = [4, 2, 4, 1, 2, 4, 0, 2, 4, 1, 2, 0]; // 战斗: 急促交错
+const MELODY_RESULT = [0, 4, 2, 1, 0];               // 结算: 回归宫音
+
+const BASS_PATTERN_INTRO = [0, -1, 2, -1];            // G, A, E, A
+const BASS_PATTERN_FIGHT = [0, 0, 2, 1];              // G, G, E, D
+const BASS_PATTERN_RESULT = [0, 2, -1, 0];            // G, E, A, G
+
+function getPatternFor(idx){
+  if (idx === 0) return { melody: MELODY_INTRO, bass: BASS_PATTERN_INTRO, tempoScale: 1.3 };
+  if (idx === 1) return { melody: MELODY_FIGHT, bass: BASS_PATTERN_FIGHT, tempoScale: 0.55 };
+  return { melody: MELODY_RESULT, bass: BASS_PATTERN_RESULT, tempoScale: 1.0 };
+}
+
+// 音乐调度器
+function scheduleMusic(){
+  if (!audioCtx || !masterGain) return;
+  if (!musicOn) { musicTimer = setTimeout(scheduleMusic, 100); return; }
+
+  const now = audioCtx.currentTime;
+  const scene = getPatternFor(current);
+  const beatInterval = scene.tempoScale;
+
+  // 每拍: 鼓点 + 木鱼 + 旋律/低音
+  const beat = musicTickCount % 8;
+  const melodyPattern = scene.melody;
+  const bassPattern = scene.bass;
+
+  // 木鱼/梆子: 每拍都敲,不同位置不同音量
+  playWood(now, beat % 2 === 0 ? 0.35 : 0.2);
+
+  // 鼓点: 强拍
+  if (beat % 4 === 0) playDrum(now, current === 1 ? 0.45 : 0.3);
+
+  // 锣: 每 8 拍一次,战斗页更密集
+  if (beat === 0) playGong(now, current === 1 ? 0.3 : 0.2);
+  if (current === 1 && beat === 4) playGong(now + 0.3, 0.2);
+
+  // 镲片: 战斗页装饰
+  if (current === 1 && (beat === 2 || beat === 6)) playCymbal(now, 0.08);
+
+  // 箫声旋律
+  if (current === 0 || (current === 2 && beat < 4)) {
+    const melIdx = musicTickCount % melodyPattern.length;
+    const freq = PENTATONIC[melodyPattern[melIdx]];
+    playXiao(now + 0.05, freq, beatInterval * 0.9, current === 0 ? 0.18 : 0.22);
+  } else if (current === 1) {
+    // 战斗页: 快速短句
+    const melIdx = musicTickCount % melodyPattern.length;
+    const freq = PENTATONIC[melodyPattern[melIdx]];
+    playXiao(now + 0.02, freq, beatInterval * 0.6, 0.15);
+    // 偶尔加高音装饰
+    if (beat % 3 === 2) playXiao(now + 0.15, PENTATONIC[(melodyPattern[melIdx] + 2) % 5], 0.15, 0.1);
+  }
+
+  // Bass: 每 2 拍换一次
+  if (beat % 2 === 0) {
+    const bassIdx = Math.floor(musicTickCount / 2) % bassPattern.length;
+    const freq = BASS_NOTES[Math.max(0, bassPattern[bassIdx])];
+    playBass(now, freq, beatInterval * 2.2, current === 1 ? 0.22 : 0.18);
+  }
+
+  musicTickCount++;
+  musicTimer = setTimeout(scheduleMusic, beatInterval * 1000);
+}
+
+function startMusic(){
+  if (bgmStarted) return;
+  bgmStarted = true;
+  scheduleMusic();
+}
+
+function stopMusic(){
+  bgmStarted = false;
+  if (musicTimer) clearTimeout(musicTimer);
+  musicTimer = null;
+}
+
+function toggleMusic(){
+  musicOn = !musicOn;
+  if (musicOn) {
+    volIcon.innerHTML = '<path d="' + volOnPath + '"/>';
+    masterGain.gain.setTargetAtTime(0.35, audioCtx.currentTime, 0.1);
+    startMusic();
+  } else {
+    volIcon.innerHTML = '<path d="' + volOffPath + '"/>';
+    masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+    stopMusic();
+  }
+}
+
+// ============ 切换逻辑 ============
+function goTo(idx, animateFlash = true) {
+  if (idx < 0) idx = slides.length - 1;
+  if (idx >= slides.length) idx = 0;
+  if (idx === current) return;
+
+  // 特殊效果
+  if (animateFlash) {
+    if (idx === 1) {
+      // 进入战斗页:闪白+震动
+      stage.classList.add('flash-trigger','hurt-trigger');
+      setTimeout(() => {
+        stage.classList.remove('flash-trigger','hurt-trigger');
+      }, 600);
+      slides[1].classList.add('fx-active');
+      setTimeout(() => slides[1].classList.remove('fx-active'), 1200);
+    }
+  }
+
+  slides[current].classList.remove('active');
+  slides[current].classList.add('prev');
+  slides[idx].classList.remove('prev');
+  slides[idx].classList.add('active');
+
+  dots[current].classList.remove('active');
+  dots[idx].classList.add('active');
+
+  current = idx;
+  progress = 0;
+  numEl.textContent = String(idx + 1).padStart(2, '0');
+  musicTickCount = 0; // 切换场景时节奏归零
+}
+
+function next(){ goTo(current + 1); }
+function prev(){ goTo(current - 1); }
+
+// ============ 进度条动画 ============
+function tick(now){
+  if (!playing) { lastTime = now; rafId = requestAnimationFrame(tick); return; }
+  const delta = now - lastTime;
+  lastTime = now;
+  progress += delta;
+  const pct = Math.min(100, (progress / SLIDE_TIME) * 100);
+  bar.style.width = pct + '%';
+
+  if (progress >= SLIDE_TIME) {
+    progress = 0;
+    next();
+  }
+
+  rafId = requestAnimationFrame(tick);
+}
+
+// ============ 控制事件 ============
+dots.forEach(d => {
+  d.addEventListener('click', () => {
+    playing = false; updateIcon();
+    goTo(parseInt(d.dataset.goto));
+  });
+});
+
+playBtn.addEventListener('click', () => {
+  playing = !playing;
+  lastTime = performance.now();
+  updateIcon();
+});
+
+function updateIcon(){
+  playIcon.innerHTML = playing
+    ? '<path d="'+playIconPath+'"/>'
+    : '<path d="'+pauseIconPath+'"/>';
+}
+
+// ============ 键盘 + 触摸 ============
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  if (e.key === 'p' || e.key === 'P') { playing = !playing; updateIcon(); lastTime = performance.now(); }
+});
+
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+});
+
+// 点击左右区域切换
+stage.addEventListener('click', e => {
+  if (e.target.closest('.controls') || e.target.closest('.topbar')) return;
+  const x = e.clientX / window.innerWidth;
+  if (x < 0.25) prev();
+  else if (x > 0.75) next();
+});
+
+// ============ 启动 ============
+rafId = requestAnimationFrame(tick);
+updateIcon();
+
+// 自动结束后继续循环进度条
+setInterval(() => {
+  if (!playing) { progress = 0; bar.style.width = '0%'; }
+}, 500);
+
+// ============ 音频启动(用户首次交互) ============
+function tryStartAudio(){
+  if (!bgmStarted) {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    startMusic();
+  }
+}
+['click','touchstart','keydown'].forEach(evt => {
+  document.addEventListener(evt, tryStartAudio, { once: true, passive: true });
+});
+
+// 音量按钮
+volBtn.addEventListener('click', () => {
+  tryStartAudio();
+  toggleMusic();
+});
+</script>
+
+</body>
+</html>

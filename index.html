@@ -46,8 +46,8 @@ body{
 /* ============ HUD ============ */
 .hud{position:absolute;inset:0;z-index:1;transition:opacity .45s ease,transform .45s ease}
 .hud::before,.hud::after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:-1}
-.hud::before{top:0;height:200px;background:linear-gradient(180deg,rgba(3,5,7,.88),rgba(3,5,7,.35) 46%,transparent)}
-.hud::after{bottom:0;height:250px;background:linear-gradient(0deg,rgba(3,5,7,.95),rgba(3,5,7,.62) 52%,transparent)}
+.hud::before{top:0;height:200px;background:linear-gradient(180deg,rgba(3,5,7,.78),rgba(3,5,7,.28) 46%,transparent)}
+.hud::after{bottom:0;height:clamp(160px,22vh,260px);background:linear-gradient(0deg,rgba(10,16,22,.55),rgba(8,13,18,.22) 55%,transparent)}
 .hud.is-off{opacity:0;transform:translateY(-8px);pointer-events:none}
 
 .topbar{
@@ -233,8 +233,8 @@ kbd{
 .sndbtn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round}
 .sndbtn.is-off{opacity:.4}
 
-/* stance */
-.sidegroup{display:contents}
+/* sidegroup：桌面端作为 grid 右列容器 */
+.sidegroup{display:flex;justify-content:flex-end;align-items:center}
 .stancepanel{justify-self:end;text-align:right}
 .stancepanel__label{font-size:clamp(12px,.72vw,13px);letter-spacing:.42em;color:rgba(242,236,224,.72);margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.95)}
 .stances{display:flex;gap:7px;justify-content:flex-end}
@@ -250,8 +250,9 @@ kbd{
 .stancepanel__desc{font-size:clamp(13px,.76vw,15px);letter-spacing:.04em;color:rgba(255,253,248,.95);margin-top:10px;background:rgba(3,6,9,.82);border:1px solid rgba(242,236,224,.13);padding:4px 10px;display:inline-block}
 .stancepanel__desc b{font-family:var(--font-num);font-weight:600;color:var(--gold);letter-spacing:0}
 
-/* 手机专用控制：左右移动 / 基础招式（桌面隐藏） */
-.movepad,.basicpad{display:none}
+/* 桌面端：movepad/basicpad/dodgepad 隐藏；sidegroup 显示架势面板 */
+.movepad,.basicpad,.dodgepad{display:none}
+.sidegroup{display:flex;justify-content:flex-end;align-items:center}
 .mbtn,.basic{
   background:linear-gradient(165deg,rgba(20,26,32,.92),rgba(6,9,12,.9));
   border:1px solid rgba(242,236,224,.16);
@@ -265,6 +266,20 @@ kbd{
 .mbtn.is-down,.mbtn:active{color:var(--gold);border-color:rgba(255,207,58,.55);background:linear-gradient(165deg,rgba(255,207,58,.18),rgba(6,9,12,.9))}
 .basic{color:var(--gold);letter-spacing:0}
 .basic:active{background:linear-gradient(165deg,rgba(255,207,58,.2),rgba(6,9,12,.9))}
+
+/* 闪避按钮（桌面隐藏，手机端显示） */
+.dodgepad{display:none}
+.dodgebtn{
+  background:linear-gradient(165deg,rgba(20,26,32,.92),rgba(6,9,12,.9));
+  border:1px solid rgba(53,230,200,.45);
+  color:var(--jade);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  display:grid;place-items:center;padding:0;cursor:pointer;
+  transition:border-color .18s,color .18s,background .18s,box-shadow .18s;
+  font-family:var(--font-display);letter-spacing:0;
+}
+.dodgebtn:active{color:#b4fff0;border-color:var(--jade);background:linear-gradient(165deg,rgba(53,230,200,.18),rgba(6,9,12,.9));box-shadow:0 0 18px rgba(53,230,200,.25)}
+.dodgebtn.is-cd{color:rgba(53,230,200,.35);border-color:rgba(53,230,200,.2)}
 
 /* ============ screens ============ */
 .screen{
@@ -366,90 +381,101 @@ kbd{
   .hintbar kbd{font-size:11px;height:1.45em;min-width:1.6em;margin-right:.3em;padding:0 .3em}
 }
 
-@media (max-width:860px), (max-width:1100px) and (max-height:520px){
+/* 窄屏 + 平板竖版：底栏只留走位 + 基础招式 */
+@media (max-width:860px), (max-width:1100px) and (max-height:520px), (max-width:1400px) and (orientation:portrait){
   .combopanel{top:24%}
-  /* ---- 手机上底栏改为纵向堆叠：技能坞贴底居中，架势面板在其上方 ---- */
+  /* ---- 隐藏：技能 / 架势 / 闪避 ---- */
+  .dock,.stancepanel,.dodgepad,.hintbar{display:none !important}
+  /* sidegroup 保持 contents 让 basicpad 正常参与 flex 布局 */
+  .sidegroup{display:contents}
+  /* ---- botbar 简化为两栏：左走位 / 右基础 ----
+     底部至少 86pt 安全区（端返回按钮 + Home 指示条） */
   .botbar{
-    display:flex;flex-direction:column-reverse;align-items:stretch;
-    gap:8px;bottom:10px;padding:0 12px;
-    padding-bottom:env(safe-area-inset-bottom,0);
+    display:flex;justify-content:space-between;align-items:center;
+    gap:clamp(12px,3vw,24px);
+    bottom:max(86px, calc(14px + env(safe-area-inset-bottom,0px)));
+    padding:0 clamp(14px,3vw,28px);
   }
-  .hintbar{display:none}
-  .dock{
-    align-self:center;
-    gap:clamp(6px,1.4vw,12px);
-  }
-  .skill{
-    width:clamp(42px,10.5vw,62px);
-    height:clamp(42px,10.5vw,62px);
-  }
-  .skill__face svg{width:46%;height:46%}
-  .skill__name{display:none}
-  .skill__key{display:none}
-  .skill__chg{display:none !important}
-  /* ---- 架势面板：右对齐，跟在技能坞上方 ---- */
-  .stancepanel{align-self:flex-end}
-  .stancepanel__label{font-size:10px;letter-spacing:.3em;margin-bottom:5px}
-  .stances{gap:5px}
-  .stance{
-    width:clamp(32px,8vw,40px);
-    height:clamp(32px,8vw,40px);
-    font-size:clamp(14px,3.6vw,18px);
-  }
-  .stancepanel__desc{display:none}
-}
-
-/* 手机竖版底部：左侧走位 / 中间绝招 / 右上架势 / 右下基础招式 */
-@media (max-width:860px) and (orientation:portrait){
-  .botbar{
-    display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto;
-    grid-template-areas:"move skills stance" "move skills basic";
-    align-items:center;
-    column-gap:clamp(4px,1.2vw,10px);
-    row-gap:6px;
-    bottom:10px;
-    padding:0 clamp(6px,2vw,12px);
-    padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
-  }
-  .hintbar{display:none}
-  .movepad{
-    grid-area:move;justify-self:start;
-    display:flex;align-items:center;gap:clamp(4px,1.2vw,8px);
-  }
+  .movepad{display:flex;gap:clamp(10px,2.5vw,18px)}
   .mbtn{
-    width:clamp(30px,8.6vw,42px);height:clamp(30px,8.6vw,42px);
+    width:clamp(44px,11vw,64px);height:clamp(44px,11vw,64px);
   }
-  .dock{
-    grid-area:skills;justify-self:stretch;align-self:stretch;
-    display:flex;align-items:center;justify-content:center;
-    gap:clamp(4px,1.2vw,8px);
-  }
-  .skill{
-    width:clamp(30px,8.6vw,42px);height:clamp(30px,8.6vw,42px);
-  }
-  .skill__face svg{width:46%;height:46%}
-  .skill__name,.skill__key,.skill__chg{display:none !important}
-  .stancepanel{grid-area:stance;justify-self:end;align-self:end;text-align:right;position:relative}
-  /* 标签抽离文档流，让架势/基础招式两行等高，绝招行正好竖向居中 */
-  .stancepanel__label{position:absolute;right:0;bottom:calc(100% + 4px);margin:0;font-size:9px;letter-spacing:.3em}
-  .stances{gap:4px}
-  .stance{
-    width:clamp(28px,7.4vw,34px);height:clamp(28px,7.4vw,34px);
-    font-size:clamp(13px,3.4vw,16px);
-  }
-  .stancepanel__desc{display:none}
-  .basicpad{
-    grid-area:basic;justify-self:end;align-self:start;
-    display:flex;gap:clamp(4px,1.2vw,8px);
-  }
+  .basicpad{display:flex;gap:clamp(8px,2vw,14px)}
   .basic{
-    width:clamp(30px,8.6vw,42px);height:clamp(28px,7.4vw,34px);
-    font-size:clamp(15px,4vw,19px);
+    width:clamp(44px,11vw,64px);height:clamp(44px,11vw,64px);
+    font-size:clamp(17px,4.5vw,24px);
   }
 }
 
-/* 手机横版：顶部 HUD 紧凑，底栏单行排布（左走位 / 中绝招 / 右架势+基础招式） */
+/* 手机 + 平板竖版：顶部 HUD 纵向叠放，底部简化 */
+@media (max-width:1400px) and (orientation:portrait){
+  /* 竖版专属：走位按键居上，基础招式竖向排列 */
+  .movepad{align-self:flex-start;margin-top:clamp(4px,1.2vh,12px)}
+  .basicpad{flex-direction:column;gap:clamp(6px,1.5vh,12px);align-self:flex-end;margin-right:clamp(16px,4.5vw,38px)}
+  /* ========== 顶部 HUD 重构 ========== */
+  .topbar{
+    padding:calc(10px + env(safe-area-inset-top,0px)) 10px 4px;
+    gap:4px;
+  }
+  /* side 改为纵向叠放：名字→头像→血条；给够宽度空间 */
+  .side,.side--e{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:3px;
+    flex:0 0 auto;
+    min-width:clamp(110px,32vw,150px);
+    max-width:clamp(110px,32vw,150px);
+  }
+  .side--e{align-items:flex-end}
+  /* vitals wrapper 消失，子元素直接参与 side 的 flex */
+  .vitals{display:contents}
+  /* 重排：名字标签最上 → 头像居中 → 血条最下 */
+  .vitals__head{order:-2;margin-bottom:0}
+  .portrait{order:-1}
+  .row{order:0;width:100%}
+  /* 头像尺寸 */
+  .portrait{
+    width:clamp(36px,9vw,48px);height:clamp(36px,9vw,48px);
+  }
+  /* 名字 */
+  .fname{font-size:clamp(11px,2.8vw,14px);letter-spacing:.12em}
+  .ftag{font-size:9px;padding:1px 5px}
+  .side--e .vitals__head{justify-content:flex-end;width:100%}
+  /* 血条：明确宽度 100%，skew 后被父容器 clip 导致不显示 */
+  .row{margin-bottom:3px;overflow:hidden}
+  .bar{height:8px;transform:skewX(-12deg)}
+  .bar--hp{height:10px}
+  .bar--qi{height:5px}
+  .barqi-num{font-size:8px;margin-top:1px;text-align:right;display:block}
+  .side--e .barqi-num{text-align:left}
+  
+  /* 中间舞台信息 */
+  .stage{
+    min-width:0;padding-top:0;text-align:center;
+    flex:1 1 0;align-self:flex-start;min-width:60px;
+  }
+  .stage__round{font-size:8px;letter-spacing:.24em}
+  .stage__name{font-size:clamp(11px,2.8vw,14px);letter-spacing:.1em;margin:1px 0}
+  .stage__timer{font-size:9px;letter-spacing:.16em}
+  .combopanel{top:30%}
+
+  /* ========== 底部不变 ========== */
+  .botbar{
+    bottom:calc(18px + env(safe-area-inset-bottom,0px));
+    padding:0 clamp(16px,4vw,28px);
+  }
+  .movepad{gap:clamp(12px,3vw,20px)}
+  .mbtn{
+    width:clamp(48px,13vw,68px);height:clamp(48px,13vw,68px);
+  }
+  .basicpad{gap:clamp(8px,2.2vw,16px)}
+  .basic{
+    width:clamp(48px,13vw,68px);height:clamp(48px,13vw,68px);
+    font-size:clamp(18px,5vw,26px);
+  }
+}
+
+/* 手机横版：顶部 HUD 紧凑（底栏已由窄屏通用块处理：左走位 / 右基础） */
 @media (max-width:860px) and (orientation:landscape), (max-width:1100px) and (max-height:520px) and (orientation:landscape){
   .topbar{
     padding-top:calc(4px + env(safe-area-inset-top,0px));
@@ -472,49 +498,14 @@ kbd{
   .stage__timer{font-size:9px}
   .combopanel{top:22%}
 
+  /* 横屏底栏：按钮在底部黑色遮罩区域里竖向居中 */
   .botbar{
-    display:grid;
-    grid-template-columns:1fr auto 1fr;
-    grid-template-areas:"move skills side";
-    align-items:center;
-    column-gap:clamp(10px,2vw,24px);
-    bottom:calc(8px + env(safe-area-inset-bottom,0px));
-    padding-left:calc(12px + env(safe-area-inset-left,0px));
-    padding-right:calc(12px + env(safe-area-inset-right,0px));
-    padding-bottom:0;
-    padding-top:0;
+    bottom:calc(clamp(60px,14vh,100px) + env(safe-area-inset-bottom,0px));
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 clamp(14px,3vw,28px);
   }
-  .hintbar{display:none}
-  .movepad{
-    grid-area:move;justify-self:start;
-    display:flex;align-items:center;gap:8px;
-  }
-  .mbtn{width:clamp(38px,11vh,52px);height:clamp(38px,11vh,52px)}
-  .dock{
-    grid-area:skills;justify-self:center;
-    display:flex;align-items:center;justify-content:center;
-    gap:clamp(6px,1vw,12px);
-  }
-  .skill{width:clamp(36px,11vh,50px);height:clamp(36px,11vh,50px)}
-  .skill__face svg{width:46%;height:46%}
-  .skill__name,.skill__key,.skill__chg{display:none !important}
-  .sidegroup{
-    grid-area:side;justify-self:end;
-    display:flex;align-items:center;gap:clamp(8px,1.6vw,18px);
-  }
-  .stancepanel{position:static;justify-self:auto;text-align:right}
-  .stancepanel__label{display:none}
-  .stances{gap:5px}
-  .stance{
-    width:clamp(28px,9vh,40px);height:clamp(28px,9vh,40px);
-    font-size:clamp(12px,3.4vh,16px);
-  }
-  .stancepanel__desc{display:none}
-  .basicpad{display:flex;gap:clamp(5px,1vw,9px)}
-  .basic{
-    width:clamp(34px,10vh,46px);height:clamp(28px,9vh,40px);
-    font-size:clamp(14px,4vh,18px);
-  }
+  .mbtn{width:clamp(36px,10vh,50px);height:clamp(36px,10vh,50px)}
+  .basic{width:clamp(36px,10vh,50px);height:clamp(36px,10vh,50px);font-size:clamp(16px,4vh,22px)}
 
   /* 横屏标题页压缩，避免竖向溢出 */
   .titlewrap{padding:6px 10px;margin-top:0}
@@ -635,7 +626,7 @@ kbd{
       <div class="dock" id="dock"></div>
 
       <div class="sidegroup">
-        <div class="stancepanel">
+        <div class="stancepanel" id="stancePanel">
           <div class="stancepanel__label">架 势</div>
           <div class="stances" id="stances">
             <button class="stance" data-stance="guard">守</button>
@@ -650,6 +641,10 @@ kbd{
           <button class="basic" data-move="flick" aria-label="撩">撩</button>
           <button class="basic" data-move="sweep" aria-label="扫">扫</button>
         </div>
+      </div>
+
+      <div class="dodgepad" id="dodgePad">
+        <button class="dodgebtn" id="dodgeBtn" aria-label="闪避">闪</button>
       </div>
     </div>
   </div>
@@ -669,6 +664,7 @@ kbd{
         <button class="mode" data-diff="hard">困 难</button>
       </div>
       <button class="btn" id="startBtn">开 始 对 练</button>
+      <button class="btn btn--ghost" id="tipBtn" style="margin-top:12px">🐉 支 持 开 发 者 · 打 赏</button>
       <div class="controls">
         <span><kbd>鼠标</kbd>甩动双节棍</span>
         <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
@@ -708,6 +704,7 @@ kbd{
         <button class="btn" id="againBtn">再 战</button>
         <button class="btn btn--ghost" id="homeBtn">回到封面</button>
       </div>
+      <button class="btn btn--ghost" id="tipBtnWin" style="margin-top:14px;background:rgba(255,207,58,.08);border:1px solid var(--gold-soft);color:var(--gold)">🐉 功 夫 不 负 有 心 人 · 打 赏</button>
     </div>
   </div>
 
@@ -726,9 +723,40 @@ kbd{
         <button class="btn" id="retryBtn">再 来</button>
         <button class="btn btn--ghost" id="homeBtn2">回到封面</button>
       </div>
+      <button class="btn btn--ghost" id="tipBtnLose" style="margin-top:14px;background:rgba(255,207,58,.08);border:1px solid var(--gold-soft);color:var(--gold)">🐉 失 败 乃 成 功 之 母 · 打 赏</button>
     </div>
   </div>
 </div>
+
+<!-- ================= TIP MODAL ================= -->
+<div class="screen hidden" id="tipModal" style="background:rgba(5,7,10,.92);backdrop-filter:blur(8px)">
+  <div class="card" style="max-width:380px">
+    <div class="card__kicker">SUPPORT</div>
+    <div class="card__title">打 赏 开 发 者</div>
+    <div class="card__sub">你的每一分支持，都是继续创作的动力</div>
+    <div id="tipPresets" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0 14px">
+      <button class="tip-preset" data-amount="6.66">¥6.66</button>
+      <button class="tip-preset" data-amount="18.88">¥18.88</button>
+      <button class="tip-preset" data-amount="66.66">¥66.66</button>
+      <button class="tip-preset" data-amount="1.00">¥1.00</button>
+      <button class="tip-preset" data-amount="8.88">¥8.88</button>
+      <button class="tip-preset" data-amount="28.88">¥28.88</button>
+    </div>
+    <input id="tipCustom" type="text" inputmode="decimal" placeholder="或输入自定义金额（元）" style="width:100%;padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(242,236,224,.2);border-radius:4px;color:var(--paper);font-family:var(--font-ui);font-size:14px;text-align:center;outline:none;letter-spacing:.06em"/>
+    <div class="actions" style="margin-top:20px">
+      <button class="btn" id="tipConfirm" disabled>确 认 打 赏</button>
+      <button class="btn btn--ghost" id="tipCancel">取 消</button>
+    </div>
+    <div id="tipStatus" style="margin-top:12px;font-size:12px;color:rgba(242,236,224,.5);text-align:center;min-height:18px"></div>
+  </div>
+</div>
+
+<style>
+.tip-preset{padding:12px 6px;background:rgba(255,255,255,.06);border:1px solid rgba(242,236,224,.18);border-radius:4px;color:var(--paper);font-family:var(--font-ui);font-size:14px;cursor:pointer;transition:all .15s;letter-spacing:.08em}
+.tip-preset:hover{background:rgba(255,207,58,.1);border-color:var(--gold-soft)}
+.tip-preset.active{background:rgba(255,207,58,.18);border-color:var(--gold);color:var(--gold)}
+#tipCustom:focus{border-color:var(--gold);background:rgba(255,207,58,.06)}
+</style>
 
 <script>
 /* ============================================================
@@ -788,6 +816,7 @@ const S = {
   stance: 'attack',
 };
 
+/* ---------- stance ---------- */
 const STANCE = {
   guard:  { dmg: 0.8, taken: 0.6, qi: 1.3, label: '伤害 ×0.8 ・ 受伤 ×0.6' },
   attack: { dmg: 1.0, taken: 1.0, qi: 1.0, label: '伤害 ×1.0 ・ 受伤 ×1.0' },
@@ -923,7 +952,7 @@ function resize() {
   /* 人物与木桩整体放大（目标 2x），受画面高度限制时自动收敛，
      避免头顶撞顶部血条、脚下压底部技能坞 */
   /* 直接量取底部技能坞的真实位置，避免用 CSS clamp 公式估算产生 8px 误差 */
-  const mobile = W <= 860 || (H <= 520 && W <= 1100);
+  const mobile = W <= 860 || (H <= 520 && W <= 1100) || (H > W && W <= 1400);
   const portrait = H > W;
   /* 竖版沿用按高度估算；横版顶部 HUD 竖向占比更大，直接量取真实底边，避免角色压到血条 */
   const topbarEl = document.querySelector('.topbar');
@@ -972,11 +1001,20 @@ function resize() {
   const charSide = Math.max(36 * fk, W * 0.08);
   const dummySide = 112 * fk;
   const minGap = 170 * fk;
+  /* 有效触达半径：肩+手+棍+判定 ≈ 260*fk */
+  const reach = 260 * fk;
+  /* 最大舒适间距：触达 + 一小段可走位空间 */
+  const maxComfortGap = reach + 100 * fk;
   if (mobile && portrait) {
-    /* 竖版：人物与木桩各自贴住左右安全边距，在全身可见的前提下把间距拉到最大 */
+    /* 手机竖版：贴边让画面饱满；平板竖版：限制间距在触达范围内 */
     const padX = 10;
     L.pxBase = padX + 60 * fk;
     L.dx = W - padX - 62 * L.dk;
+    /* 间距过大时（平板），把木桩往人物拉近 */
+    const gap = L.dx - L.pxBase;
+    if (gap > maxComfortGap + 80 * fk) {
+      L.dx = L.pxBase + maxComfortGap;
+    }
   } else {
     L.pxBase = Math.max(charSide, W * 0.24);
     /* 木桩整体左移约 3cm（96dpi 下约 114px），并保证与人物仍留有足够间距 */
@@ -993,7 +1031,8 @@ function resize() {
       }
     }
   }
-  L.stepMax = Math.min(214 * fk, (L.dx - L.pxBase) * 0.72);
+  /* stepMax 至少覆盖触达距离，保证玩家能走到打到木桩 */
+  L.stepMax = Math.max(reach - 40 * fk, Math.min(214 * fk, (L.dx - L.pxBase) * 0.72));
   L.px = L.pxBase + S.stepF * L.stepMax;
   L.hitR = 68 * fk;
   L.shoulder = { x: L.px + 18 * fk, y: L.groundY - 176 * fk };
@@ -1092,13 +1131,21 @@ $('#movePad').querySelectorAll('[data-move]').forEach(btn => {
   btn.addEventListener('pointercancel', () => set(false));
 });
 
-/* 手机端：基础招式 劈 / 撩 / 扫 */
-$('#basicPad').addEventListener('click', e => {
+/* 手机端：基础招式 劈 / 撩 / 扫 — 用 pointerdown 消除 click 300ms 延迟 */
+$('#basicPad').addEventListener('pointerdown', e => {
   const b = e.target.closest('[data-move]');
   if (!b) return;
+  e.preventDefault();
+  if (SFX.on) SFX.ready();
   const idx = MOVES.findIndex(m => m.id === b.dataset.move);
   if (idx >= 0) doMove(idx);
 });
+
+/* 手机端：闪避按钮 */
+const dodgeBtnEl = document.getElementById('dodgeBtn');
+if (dodgeBtnEl) {
+  dodgeBtnEl.addEventListener('click', () => { if (SFX.on) SFX.ready(); doDodge(); });
+}
 
 /* 走位：A/D 或 左右方向键 */
 window.addEventListener('keydown', e => {
@@ -1276,8 +1323,10 @@ function doDodge() {
 function doMove(i) {
   const m = MOVES[i];
   if (!m || S.phase !== 'fight' || D.broken) return;
-  if (m.cdLeft > 0 || MV.t > 0) return;
-  m.cdLeft = m.cd;
+  /* cd 减半：基础招式可以快速连点；MV.t 允许在后半段预输入衔接 */
+  if (m.cdLeft > 0.12) return;
+  if (MV.t > m.dur * 0.4) return;
+  m.cdLeft = m.cd * 0.5;
   MV.t = m.dur; MV.dur = m.dur; MV.def = m;
   SFX.noise(0.12, 0.09, 1400, 1.2);
   dmgText(L.px + 4 * L.fk, L.groundY - 246 * L.fk, m.name, '#ffcf3a', 26);
@@ -1390,6 +1439,93 @@ $('#sndBtn').addEventListener('click', e => {
   SFX.on = !SFX.on;
   e.currentTarget.classList.toggle('is-off', !SFX.on);
   if (SFX.on) SFX.clack(1);
+});
+
+/* ============================================================
+   打赏 · Alipay Workers API
+   ============================================================ */
+const TIP_API_BASE = 'https://nunchaku-pay.1876449514.workers.dev';
+let tipSelectedAmount = '';
+
+function openTipModal() {
+  tipSelectedAmount = '';
+  $('#tipModal').classList.remove('hidden');
+  document.querySelectorAll('.tip-preset').forEach(b => b.classList.remove('active'));
+  $('#tipCustom').value = '';
+  $('#tipConfirm').disabled = true;
+  $('#tipStatus').textContent = '';
+}
+function closeTipModal() { $('#tipModal').classList.add('hidden'); }
+
+$('#tipBtn').addEventListener('click', openTipModal);
+$('#tipBtnWin').addEventListener('click', openTipModal);
+$('#tipBtnLose').addEventListener('click', openTipModal);
+$('#tipCancel').addEventListener('click', closeTipModal);
+
+document.querySelectorAll('.tip-preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    tipSelectedAmount = btn.dataset.amount;
+    document.querySelectorAll('.tip-preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('#tipCustom').value = '';
+    $('#tipConfirm').disabled = false;
+  });
+});
+
+$('#tipCustom').addEventListener('input', () => {
+  const v = $('#tipCustom').value.trim();
+  const n = parseFloat(v);
+  if (!isNaN(n) && n > 0) {
+    tipSelectedAmount = n.toFixed(2);
+    $('#tipConfirm').disabled = false;
+    document.querySelectorAll('.tip-preset').forEach(b => b.classList.remove('active'));
+  } else {
+    tipSelectedAmount = '';
+    $('#tipConfirm').disabled = true;
+  }
+});
+
+$('#tipConfirm').addEventListener('click', async () => {
+  if (!tipSelectedAmount) return;
+  const btn = $('#tipConfirm');
+  const status = $('#tipStatus');
+  btn.disabled = true;
+  btn.textContent = '处 理 中 ...';
+  status.style.color = 'rgba(242,236,224,.5)';
+  status.textContent = '正在创建订单...';
+  try {
+    const r = await fetch(TIP_API_BASE + '/api/pay/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: tipSelectedAmount, subject: '双龙棍格斗 · 打赏' })
+    });
+    const data = await r.json();
+    if (!data.ok && data.code) {
+      status.style.color = '#ff8a72';
+      status.textContent = data.msg || '下单失败，请稍后重试';
+      btn.disabled = false;
+      btn.textContent = '确 认 打 赏';
+      return;
+    }
+    status.textContent = '正在跳转支付宝...';
+    // Workers 返回 paymentHtml（已签名的 form），自动提交
+    const div = document.createElement('div');
+    div.innerHTML = data.paymentHtml;
+    document.body.appendChild(div);
+    const form = div.querySelector('form');
+    if (form) form.submit();
+    else {
+      status.style.color = '#ff8a72';
+      status.textContent = '支付表单解析失败';
+      btn.disabled = false;
+      btn.textContent = '确 认 打 赏';
+    }
+  } catch (e) {
+    status.style.color = '#ff8a72';
+    status.textContent = '网络错误：' + e.message;
+    btn.disabled = false;
+    btn.textContent = '确 认 打 赏';
+  }
 });
 
 /* ============================================================
@@ -1548,6 +1684,8 @@ function update(dt, rawDt) {
   S.dodge = Math.max(0, S.dodge - dt);
   S.dodgeCd = Math.max(0, S.dodgeCd - dt);
   S.invuln = Math.max(0, S.invuln - dt);
+  // 闪避按钮冷却视觉反馈
+  if (dodgeBtnEl) dodgeBtnEl.classList.toggle('is-cd', S.dodgeCd > 0);
   const targetOff = S.dodge > 0 ? -46 * L.fk : 0;
   S.playerOffV += (targetOff - S.playerOff) * 60 * dt - S.playerOffV * 7 * dt;
   S.playerOff += S.playerOffV * dt;

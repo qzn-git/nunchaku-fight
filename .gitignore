@@ -1,0 +1,13 @@
+# ===== 临时文件 =====
+.screenshots/
+.skill/
+.wrangler/
+
+# ===== 不相关目录 =====
+delivery/
+万象计划*
+帖子草稿/
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
