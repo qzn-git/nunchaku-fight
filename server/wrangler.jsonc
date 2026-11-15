@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "nunchaku-pay",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "vars": {
+    "ALIPAY_SANDBOX": "false",
+    "ALIPAY_APP_ID": "2021007104632576",
+    "ALIPAY_SELLER_ID": "2088912842720751",
+    "ALIPAY_GATEWAY": "https://openapi.alipay.com/gateway.do",
+    "ALIPAY_SIGN_TYPE": "RSA2",
+    "ALIPAY_RETURN_URL": "https://nunchaku-pay.1876449514.workers.dev/api/pay/return",
+    "ALIPAY_NOTIFY_URL": "https://nunchaku-pay.1876449514.workers.dev/api/pay/notify"
+  },
+
+  "kv_namespaces": [
+    { "binding": "NUNCHAKU_ORDERS", "id": "7e38b630f0574c5680bd13154d92ac8c" }
+  ]
+}

@@ -11,3 +11,10 @@ delivery/
 # ===== 系统文件 =====
 .DS_Store
 Thumbs.db
+
+# ===== 后端敏感/运行时文件 =====
+server/node_modules/
+server/.env
+server/data/
+server/.wrangler/
+server/*.log

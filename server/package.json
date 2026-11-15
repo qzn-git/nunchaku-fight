@@ -1,0 +1,22 @@
+{
+  "name": "nunchaku-pay-server",
+  "version": "0.1.0",
+  "description": "双龙棍格斗打赏后端 - 支付宝 AI 网页应用收款",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "alipay-sdk": "4.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "hono": "^4.13.18"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}
