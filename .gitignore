@@ -13,6 +13,10 @@ nunchaku-game/
 .DS_Store
 Thumbs.db
 
+# ===== 压缩包 =====
+*.zip
+*.tar.gz
+
 # ===== 后端敏感/运行时文件 =====
 server/node_modules/
 server/.env
