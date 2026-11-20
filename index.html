@@ -26,12 +26,13 @@
 html,body{height:100%}
 body{
   margin:0;background:var(--ink);color:var(--paper);
-  font-family:var(--font-ui);overflow:hidden;
-  -webkit-font-smoothing:antialiased;user-select:none;
+  font-family:var(--font-ui);overflow:hidden;overscroll-behavior:none;
+  -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
+  -webkit-touch-callout:none;touch-action:none;
   cursor:crosshair;
 }
-#app{position:fixed;inset:0;overflow:hidden}
-#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+#app{position:fixed;inset:0;overflow:hidden;touch-action:none}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 
 /* ============ fx layers ============ */
 .fx-vignette,.fx-grain,.fx-flash,.fx-hurt{position:absolute;inset:0;pointer-events:none}
@@ -349,6 +350,7 @@ kbd{
   font-size:12px;letter-spacing:.1em;color:rgba(242,236,224,.5);
   padding-top:18px;border-top:1px solid rgba(242,236,224,.09);width:min(560px,80vw);
 }
+.controls--mobile{display:none}
 
 .card{
   width:min(520px,88vw);padding:34px 38px 30px;background:var(--glass);
@@ -384,6 +386,9 @@ kbd{
 /* 窄屏 + 平板竖版：底栏只留走位 + 基础招式 */
 @media (max-width:860px), (max-width:1100px) and (max-height:520px), (max-width:1400px) and (orientation:portrait){
   .combopanel{top:24%}
+  /* ---- 封面键位提示切换为触屏版 ---- */
+  .controls--desktop{display:none !important}
+  .controls--mobile{display:flex !important}
   /* ---- 隐藏：技能 / 架势 / 闪避 ---- */
   .dock,.stancepanel,.dodgepad,.hintbar{display:none !important}
   /* sidegroup 保持 contents 让 basicpad 正常参与 flex 布局 */
@@ -477,6 +482,9 @@ kbd{
 
 /* 手机横版：顶部 HUD 紧凑（底栏已由窄屏通用块处理：左走位 / 右基础） */
 @media (max-width:860px) and (orientation:landscape), (max-width:1100px) and (max-height:520px) and (orientation:landscape){
+  /* 封面键位提示切换为触屏版 */
+  .controls--desktop{display:none !important}
+  .controls--mobile{display:flex !important}
   .topbar{
     padding-top:calc(4px + env(safe-area-inset-top,0px));
     padding-left:calc(12px + env(safe-area-inset-left,0px));
@@ -664,12 +672,17 @@ kbd{
         <button class="mode" data-diff="hard">困 难</button>
       </div>
       <button class="btn" id="startBtn">开 始 对 练</button>
-      <div class="controls">
+      <div class="controls controls--desktop">
         <span><kbd>鼠标</kbd>甩动双节棍</span>
         <span><kbd>J</kbd>劈 <kbd>K</kbd>撩 <kbd>L</kbd>扫</span>
         <span><kbd>A</kbd><kbd>D</kbd>走位</span>
         <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd>绝招</span>
         <span><kbd>空格</kbd>闪避</span>
+      </div>
+      <div class="controls controls--mobile">
+        <span><kbd>滑动</kbd>甩动双节棍</span>
+        <span><kbd>←</kbd><kbd>→</kbd>走位</span>
+        <span><kbd>点按</kbd>劈 · 撩 · 扫</span>
       </div>
       <button class="btn btn--ghost" id="tipBtn" style="margin-top:18px;letter-spacing:.34em">打 赏</button>
     </div>
@@ -704,7 +717,6 @@ kbd{
         <button class="btn" id="againBtn">再 战</button>
         <button class="btn btn--ghost" id="homeBtn">回到封面</button>
       </div>
-      <button class="btn btn--ghost" id="tipBtnWin" style="margin-top:14px;background:rgba(255,207,58,.08);border:1px solid var(--gold-soft);color:var(--gold);letter-spacing:.34em">打 赏</button>
     </div>
   </div>
 
@@ -723,7 +735,6 @@ kbd{
         <button class="btn" id="retryBtn">再 来</button>
         <button class="btn btn--ghost" id="homeBtn2">回到封面</button>
       </div>
-      <button class="btn btn--ghost" id="tipBtnLose" style="margin-top:14px;background:rgba(255,207,58,.08);border:1px solid var(--gold-soft);color:var(--gold);letter-spacing:.34em">打 赏</button>
     </div>
   </div>
 </div>
@@ -1075,16 +1086,18 @@ if (window.screen && screen.orientation && screen.orientation.addEventListener) 
 function trackPointer(e) {
   /* 触摸底部控制栏时不要把甩棍的手拽到按键位置 */
   if (e.target && e.target.closest && e.target.closest('.botbar')) return;
+  /* 防止触屏滑动触发浏览器滚动手势，保证 pointermove 连续触发 */
+  if (e.cancelable) e.preventDefault();
   const r = canvas.getBoundingClientRect();
   S.mouse.x = e.clientX - r.left;
   S.mouse.y = e.clientY - r.top;
   S.mouseInit = true;
 }
-window.addEventListener('pointermove', trackPointer);
+window.addEventListener('pointermove', trackPointer, { passive: false });
 window.addEventListener('pointerdown', e => {
   trackPointer(e);
   if (SFX.on) SFX.ready();
-});
+}, { passive: false });
 
 window.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
@@ -1458,8 +1471,7 @@ function openTipModal() {
 function closeTipModal() { $('#tipModal').classList.add('hidden'); }
 
 $('#tipBtn').addEventListener('click', openTipModal);
-$('#tipBtnWin').addEventListener('click', openTipModal);
-$('#tipBtnLose').addEventListener('click', openTipModal);
+
 $('#tipCancel').addEventListener('click', closeTipModal);
 
 document.querySelectorAll('.tip-preset').forEach(btn => {
